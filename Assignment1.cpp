@@ -80,6 +80,70 @@ void normal(int tindx)
 	glNormal3f(nx, ny, nz);
 }
 
+void drawSkybox()
+{
+	glDisable(GL_LIGHTING);
+
+	glColor3f(0.2, 0.6, 0.8);
+	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
+	
+	// LEFT
+	glBegin(GL_QUADS);
+	glNormal3f(0, 0, 1);
+	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+	glEnd();
+	
+	// RIGHT
+	glBegin(GL_QUADS);
+	glNormal3f(0, 0, -1);
+	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top left
+	glEnd();
+	
+	// FRONT
+	glBegin(GL_QUADS);
+	glNormal3f(-1, 0, 0);
+	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+	glEnd();
+	
+	// BACK
+	glBegin(GL_QUADS);
+	glNormal3f(1, 0, 0);
+	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top left
+	glEnd();
+	
+	// BOTTOM
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);
+	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // top right
+	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // top left
+	glEnd();
+	
+	// TOP
+	glBegin(GL_QUADS);
+	glNormal3f(0, -1, 0);
+	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // bottom left
+	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // bottom right
+	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
 //----------draw a floor plane-------------------
 void drawFloor()
 {
@@ -138,6 +202,8 @@ void display()
 	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, 0, cam_z + look_z, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lpos);   //set light position
 
+	drawSkybox();
+
 	drawFloor();
 	drawMuseum();
 
@@ -156,7 +222,7 @@ void initialize()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, 1, 50, 1000);  //The camera view volume
+	gluPerspective(60, 1, 10, 5000);  //The camera view volume
 }
 
 void special(int key, int x, int y)
