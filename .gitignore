@@ -1,0 +1,7 @@
+# IDE
+.vscode
+
+# Compiled files and binaries
+**/*.o
+**/*.exe
+**/*.dll
