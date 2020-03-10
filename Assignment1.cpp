@@ -4,11 +4,14 @@
 #include <math.h>
 #include <GL/freeglut.h>
 
-#define PLANE_X 1000
-#define PLANE_Z 1000
+#define PLANE_X 500
+#define PLANE_Z 500
+#define PLANE_BOUNDARY 10
 #define PLANE_TILE_SIZE 10
 #define MOVE_SPEED 3
 #define TURN_SPEED 3
+#define METATRAVELLER_COUNT 36
+#define METATRAVELLER_SPEED 1
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
 #define clamp(val, min, max) val < min ? min : (val > max ? max : val)
@@ -19,12 +22,12 @@ using namespace std;
 float *x, *y, *z;		//vertex coordinate arrays
 int *t1, *t2, *t3;		//triangles
 int nvrt, ntri;			//total number of vertices and triangles
-int angle = 0;	    //Rotation angle for viewing
+int angle = 90;	    //Rotation angle for viewing
 float cam_hgt = 100;
 
-float cam_x = -(PLANE_X / 2);
+float cam_x = 0;
 float cam_y = 50;
-float cam_z = 0;
+float cam_z = -PLANE_Z / 2;
 
 //-- Loads mesh data in OFF format    -------------------------------------
 void loadMeshFile(const char* fname)  
@@ -87,7 +90,7 @@ void drawSkybox()
 	glColor3f(0.2, 0.6, 0.8);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
 	
-	// LEFT
+	// BACK
 	glBegin(GL_QUADS);
 	glNormal3f(0, 0, 1);
 	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
@@ -96,7 +99,7 @@ void drawSkybox()
 	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
 	
-	// RIGHT
+	// FRONT
 	glBegin(GL_QUADS);
 	glNormal3f(0, 0, -1);
 	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
@@ -105,7 +108,7 @@ void drawSkybox()
 	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top left
 	glEnd();
 	
-	// FRONT
+	// LEFT
 	glBegin(GL_QUADS);
 	glNormal3f(-1, 0, 0);
 	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
@@ -114,7 +117,7 @@ void drawSkybox()
 	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
 	
-	// BACK
+	// RIGHT
 	glBegin(GL_QUADS);
 	glNormal3f(1, 0, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
@@ -171,16 +174,16 @@ void drawFloor()
 void drawMuseum()
 {
 	glColor3f(0.8, 0.5, 0.0);
-	// glPushMatrix();
-	// 	glTranslatef(200, 200, 0);
-	// 	glScalef(20, 400, 400);
-	// 	glutSolidCube(1);
-	// glPopMatrix();
-	// glPushMatrix();
-	// 	glTranslatef(-200, 200, 0);
-	// 	glScalef(20, 400, 400);
-	// 	glutSolidCube(1);
-	// glPopMatrix();
+	glPushMatrix();
+		glTranslatef(200, 200, 0);
+		glScalef(20, 400, 400);
+		glutSolidCube(1);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(-200, 200, 0);
+		glScalef(20, 400, 400);
+		glutSolidCube(1);
+	glPopMatrix();
 }
 
 void display()
@@ -245,6 +248,9 @@ void special(int key, int x, int y)
 			break;
 	}
     
+	cam_x = clamp(cam_x, -PLANE_X + PLANE_BOUNDARY, PLANE_X - PLANE_BOUNDARY);
+	cam_z = clamp(cam_z, -PLANE_Z + PLANE_BOUNDARY, PLANE_Z - PLANE_BOUNDARY);
+
 	glutPostRedisplay();
 }
 
