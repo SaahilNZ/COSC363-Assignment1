@@ -310,7 +310,6 @@ void drawMuseum()
 
 	// pillars
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
-	cout << pillarDistance << endl;
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
 		glPushMatrix();
@@ -320,6 +319,13 @@ void drawMuseum()
 			glutSolidCylinder(10, 100, 12, 24);
 		glPopMatrix();
 	}
+
+	// roof
+	glPushMatrix();
+		glTranslatef(0, 100, 0);
+		glRotatef(-90, 1, 0, 0);
+		glutSolidCone(pillarDistance + 20, 100, MUSEUM_SIDES, MUSEUM_SIDES);
+	glPopMatrix();
 }
 
 void display()
