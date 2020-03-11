@@ -3,22 +3,29 @@
 #include <climits>
 #include <math.h>
 #include <GL/freeglut.h>
+#include "loadTGA.h"
 
-#define PLANE_X 500
-#define PLANE_Z 500
+#define GL_CLAMP_TO_EDGE 0x812F // clamp to edge isn't defined by default
+
+#define PLANE_X 1000
+#define PLANE_Z 1000
 #define PLANE_BOUNDARY 10
 #define PLANE_TILE_SIZE 10
 #define MOVE_SPEED 3
 #define TURN_SPEED 3
+
+#define MUSEUM_RADIUS 180
+#define MUSEUM_SIDES 6
 #define METATRAVELLER_COUNT 36
 #define METATRAVELLER_SPEED 1
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
+#define rad2deg(rad) (180 * rad) / (4.0 * atan(1.0))
 #define clamp(val, min, max) val < min ? min : (val > max ? max : val)
 
 using namespace std;
 
-//--Globals ---------------------------------------------------------------
+//-- Globals --------------------------------------------------------------
 float *x, *y, *z;		//vertex coordinate arrays
 int *t1, *t2, *t3;		//triangles
 int nvrt, ntri;			//total number of vertices and triangles
@@ -28,6 +35,85 @@ float cam_hgt = 100;
 float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
+
+//-- Textures -------------------------------------------------------------
+GLuint texIds[9];
+
+void loadTextures()
+{
+	glGenTextures(9, texIds);
+
+	// Skybox Front
+	glBindTexture(GL_TEXTURE_2D, texIds[0]);
+	loadTGA("textures/skybox/negz.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Skybox Back
+	glBindTexture(GL_TEXTURE_2D, texIds[1]);
+	loadTGA("textures/skybox/posz.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Skybox Right
+	glBindTexture(GL_TEXTURE_2D, texIds[2]);
+	loadTGA("textures/skybox/posx.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Skybox Left
+	glBindTexture(GL_TEXTURE_2D, texIds[3]);
+	loadTGA("textures/skybox/negx.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Skybox Bottom
+	glBindTexture(GL_TEXTURE_2D, texIds[4]);
+	loadTGA("textures/skybox/negy.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Skybox Top
+	glBindTexture(GL_TEXTURE_2D, texIds[5]);
+	loadTGA("textures/skybox/posy.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Brick
+	glBindTexture(GL_TEXTURE_2D, texIds[6]);
+	loadTGA("textures/brick.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+
+	// Concrete
+	glBindTexture(GL_TEXTURE_2D, texIds[7]);
+	loadTGA("textures/concrete.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+
+	// Sediment
+	glBindTexture(GL_TEXTURE_2D, texIds[8]);
+	loadTGA("textures/sediment.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+}
 
 //-- Loads mesh data in OFF format    -------------------------------------
 void loadMeshFile(const char* fname)  
@@ -86,65 +172,97 @@ void normal(int tindx)
 void drawSkybox()
 {
 	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 
-	glColor3f(0.2, 0.6, 0.8);
+	// glColor3f(0.2, 0.6, 0.8);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
 	
-	// BACK
-	glBegin(GL_QUADS);
-	glNormal3f(0, 0, 1);
-	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
-	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
-	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top right
-	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
-	glEnd();
-	
 	// FRONT
+	glBindTexture(GL_TEXTURE_2D, texIds[0]);
 	glBegin(GL_QUADS);
 	glNormal3f(0, 0, -1);
+	glTexCoord2f(0, 0);
 	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
 	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glTexCoord2f(0, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top left
 	glEnd();
 	
+	// BACK
+	glBindTexture(GL_TEXTURE_2D, texIds[1]);
+	glBegin(GL_QUADS);
+	glNormal3f(0, 0, 1);
+	glTexCoord2f(0, 0);
+	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
+	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
+	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+	glTexCoord2f(0, 1);
+	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+	glEnd();
+	
 	// LEFT
+	glBindTexture(GL_TEXTURE_2D, texIds[2]);
 	glBegin(GL_QUADS);
 	glNormal3f(-1, 0, 0);
+	glTexCoord2f(0, 0);
 	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
 	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glTexCoord2f(0, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
 	
 	// RIGHT
+	glBindTexture(GL_TEXTURE_2D, texIds[3]);
 	glBegin(GL_QUADS);
 	glNormal3f(1, 0, 0);
+	glTexCoord2f(0, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
 	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+	glTexCoord2f(0, 1);
 	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top left
 	glEnd();
 	
 	// BOTTOM
+	glBindTexture(GL_TEXTURE_2D, texIds[4]);
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
+	glTexCoord2f(0, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
 	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
 	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // top right
+	glTexCoord2f(0, 1);
 	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // top left
 	glEnd();
 	
 	// TOP
+	glBindTexture(GL_TEXTURE_2D, texIds[5]);
 	glBegin(GL_QUADS);
 	glNormal3f(0, -1, 0);
+	glTexCoord2f(0, 0);
 	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // bottom left
+	glTexCoord2f(1, 0);
 	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // bottom right
+	glTexCoord2f(1, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+	glTexCoord2f(0, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
 
 	glEnable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 }
 
 //----------draw a floor plane-------------------
@@ -174,16 +292,34 @@ void drawFloor()
 void drawMuseum()
 {
 	glColor3f(0.8, 0.5, 0.0);
+	// remove this after
 	glPushMatrix();
-		glTranslatef(200, 200, 0);
-		glScalef(20, 400, 400);
-		glutSolidCube(1);
+		glutSolidSphere(5, 12, 12);
 	glPopMatrix();
-	glPushMatrix();
-		glTranslatef(-200, 200, 0);
-		glScalef(20, 400, 400);
-		glutSolidCube(1);
-	glPopMatrix();
+
+	float angle = 360.0 / MUSEUM_SIDES;
+	for (int i = 1; i < MUSEUM_SIDES; i++)
+	{
+		glPushMatrix();
+			glRotatef((angle * i) + 90, 0, 1, 0);
+			glTranslatef(MUSEUM_RADIUS, 50, 0);
+			glScalef(10, 100, tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2);
+			glutSolidCube(1);
+		glPopMatrix();
+	}
+
+	// pillars
+	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
+	cout << pillarDistance << endl;
+	for (int i = 0; i < MUSEUM_SIDES; i++)
+	{
+		glPushMatrix();
+			glRotatef((angle * i), 0, 1, 0);
+			glTranslatef(pillarDistance, 0, 0);
+			glRotatef(-90, 1, 0, 0);
+			glutSolidCylinder(10, 100, 12, 24);
+		glPopMatrix();
+	}
 }
 
 void display()
@@ -194,10 +330,6 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	// https://community.khronos.org/t/about-glulookat-function-and-how-to-rotate-the-camera/67868/2
-	// look into eye xyz and center xyz. Use trig to set center to be in front of eye
-	// move center eye based on wasd
-
 
 	float look_x = cos(deg2rad(angle)) * 200;
 	float look_z = sin(deg2rad(angle)) * 200;
@@ -210,12 +342,15 @@ void display()
 	drawFloor();
 	drawMuseum();
 
-    glFlush();
+    // glFlush();
+	glutSwapBuffers();
 }
 
 void initialize()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	//Background colour
+	
+	loadTextures();
 
 	glEnable(GL_LIGHTING);					//Enable OpenGL states
 	glEnable(GL_LIGHT0);
