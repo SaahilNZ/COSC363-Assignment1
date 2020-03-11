@@ -13,6 +13,7 @@
 #define PLANE_TILE_SIZE 10
 #define MOVE_SPEED 3
 #define TURN_SPEED 3
+#define LOOK_HEIGHT 10
 
 #define MUSEUM_RADIUS 180
 #define MUSEUM_SIDES 6
@@ -326,6 +327,13 @@ void drawMuseum()
 		glRotatef(-90, 1, 0, 0);
 		glutSolidCone(pillarDistance + 20, 100, MUSEUM_SIDES, MUSEUM_SIDES);
 	glPopMatrix();
+
+	// floor
+	glPushMatrix();
+		glTranslatef(0, -0.99, 0);
+		glRotatef(-90, 1, 0, 0);
+		glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
+	glPopMatrix();
 }
 
 void display()
@@ -340,7 +348,7 @@ void display()
 	float look_x = cos(deg2rad(angle)) * 200;
 	float look_z = sin(deg2rad(angle)) * 200;
 
-	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, 0, cam_z + look_z, 0, 1, 0);
+	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, LOOK_HEIGHT, cam_z + look_z, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lpos);   //set light position
 
 	drawSkybox();
