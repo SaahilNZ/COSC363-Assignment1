@@ -17,8 +17,9 @@
 
 #define MUSEUM_RADIUS 180
 #define MUSEUM_SIDES 6
-#define METATRAVELLER_COUNT 36
-#define METATRAVELLER_SPEED 1
+#define METATRAVELLER_COUNT 72
+#define METATRAVELLER_SPEED 2
+#define METATRAVELLER_SPIRALS 6
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
 #define rad2deg(rad) (180 * rad) / (4.0 * atan(1.0))
@@ -37,8 +38,25 @@ float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
 
-//-- Textures -------------------------------------------------------------
+int metatravellerAngles[METATRAVELLER_COUNT];
+
 GLuint texIds[9];
+
+void calcMetatravellerAngles()
+{
+	for (int i = 0; i < METATRAVELLER_COUNT; i++)
+	{
+		metatravellerAngles[i] = (metatravellerAngles[i] + METATRAVELLER_SPEED) % 360;
+	}
+}
+
+void timer(int value)
+{
+	calcMetatravellerAngles();
+
+	glutPostRedisplay();
+	glutTimerFunc(10, timer, 0);
+}
 
 void loadTextures()
 {
@@ -310,6 +328,7 @@ void drawMuseum()
 	}
 
 	// pillars
+	// TODO: change glutSolidCylinder to gluCylinder (for texcoords)
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
@@ -322,6 +341,7 @@ void drawMuseum()
 	}
 
 	// roof
+	// TODO: change glutSolidCone to gluCylinder (for texcoords)
 	glPushMatrix();
 		glTranslatef(0, 100, 0);
 		glRotatef(-90, 1, 0, 0);
@@ -329,16 +349,51 @@ void drawMuseum()
 	glPopMatrix();
 
 	// floor
+	// TODO: generate floor using points and texcoords 
+	glEnable(GL_TEXTURE_2D);
+	// glEnable(GL_TEXTURE_GEN_S);
+	// glEnable(GL_TEXTURE_GEN_T);
+	glBindTexture(GL_TEXTURE_2D, texIds[7]);
 	glPushMatrix();
 		glTranslatef(0, -0.99, 0);
 		glRotatef(-90, 1, 0, 0);
 		glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
 	glPopMatrix();
+	// glDisable(GL_TEXTURE_GEN_S);
+	// glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_2D);
+}
+
+void drawMetatravellers()
+{
+
+	glPushMatrix();
+	glTranslatef(0, 30, 0);
+		for (int i = 0; i < METATRAVELLER_COUNT; i++)
+		{
+			glColor3f(0.3, 0.3, 0.3);
+			glPushMatrix();
+				glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
+				glTranslatef(0, 0, 20);
+				glRotatef(90, 0, 1, 0);
+				glutSolidTorus(0.2, 5, 4, 36);
+			glPopMatrix();
+			
+			glColor3f(0.8, 0, 0.8);
+			glPushMatrix();
+				glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
+				glTranslatef(0, 0, 20);
+				glRotatef(metatravellerAngles[i], 1, 0, 0);
+				glTranslatef(0, 0, 5);
+				glutSolidSphere(1, 12, 12);
+			glPopMatrix();
+		}
+	glPopMatrix();
 }
 
 void display()
 {
-	float lpos[4] = {0., 200., 0., 1.0};  //light's position
+	float lpos[4] = {0., 90., 0., 1.0};  //light's position
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
@@ -355,18 +410,28 @@ void display()
 
 	drawFloor();
 	drawMuseum();
+	drawMetatravellers();
 
     // glFlush();
 	glutSwapBuffers();
 }
 
+void initialiseMetatravellers()
+{
+	for (int i = 0; i < METATRAVELLER_COUNT; i++)
+	{
+		metatravellerAngles[i] = ((360 * METATRAVELLER_SPIRALS) / METATRAVELLER_COUNT) * i;
+	}
+}
+
 void initialize()
 {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	//Background colour
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	loadTextures();
+	initialiseMetatravellers();
 
-	glEnable(GL_LIGHTING);					//Enable OpenGL states
+	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
@@ -374,7 +439,7 @@ void initialize()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, 1, 10, 5000);  //The camera view volume
+	gluPerspective(60, 1, 10, 5000);
 }
 
 void special(int key, int x, int y)
@@ -406,7 +471,7 @@ void special(int key, int x, int y)
 int main(int argc, char** argv)
 {
    glutInit(&argc, argv);
-   glutInitDisplayMode (GLUT_SINGLE | GLUT_DEPTH);
+   glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH);
    glutInitWindowSize (800, 800); 
    glutInitWindowPosition (10, 10);
    glutCreateWindow ("Museum");
@@ -414,6 +479,7 @@ int main(int argc, char** argv)
 
    glutDisplayFunc(display);
    glutSpecialFunc(special); 
+   glutTimerFunc(10, timer, 0);
    glutMainLoop();
    return 0;
 }
