@@ -366,17 +366,16 @@ void drawMuseum()
 
 void drawMetatravellers()
 {
-
 	glPushMatrix();
 	glTranslatef(0, 30, 0);
 		for (int i = 0; i < METATRAVELLER_COUNT; i++)
 		{
-			glColor3f(0.3, 0.3, 0.3);
+			glColor3f(1, 0.9, 0.3);
 			glPushMatrix();
 				glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
 				glTranslatef(0, 0, 20);
 				glRotatef(90, 0, 1, 0);
-				glutSolidTorus(0.2, 5, 4, 36);
+				glutSolidTorus(0.05, 5, 4, 36);
 			glPopMatrix();
 			
 			glColor3f(0.8, 0, 0.8);
@@ -471,7 +470,8 @@ void special(int key, int x, int y)
 int main(int argc, char** argv)
 {
    glutInit(&argc, argv);
-   glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH);
+   glutSetOption(GLUT_MULTISAMPLE, 4);
+   glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
    glutInitWindowSize (800, 800); 
    glutInitWindowPosition (10, 10);
    glutCreateWindow ("Museum");
