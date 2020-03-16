@@ -20,6 +20,9 @@
 #define METATRAVELLER_COUNT 72
 #define METATRAVELLER_SPEED 2
 #define METATRAVELLER_SPIRALS 6
+#define MOBIUS_STRUP_RADIUS 20
+#define MOBIUS_STRIP_SPEED 1
+#define MOBIUS_STRIP_BALLS 3
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
 #define rad2deg(rad) (180 * rad) / (4.0 * atan(1.0))
@@ -39,6 +42,7 @@ float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
 
 int metatravellerAngles[METATRAVELLER_COUNT];
+int mobiusStripBallAngle = 0;
 
 GLuint texIds[9];
 
@@ -53,6 +57,7 @@ void calcMetatravellerAngles()
 void timer(int value)
 {
 	calcMetatravellerAngles();
+	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
 
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, 0);
@@ -367,26 +372,97 @@ void drawMuseum()
 void drawMetatravellers()
 {
 	glPushMatrix();
-	glTranslatef(0, 30, 0);
-		for (int i = 0; i < METATRAVELLER_COUNT; i++)
-		{
-			glColor3f(1, 0.9, 0.3);
+		glTranslatef(0, 0, 120);
+		glPushMatrix();
+			glColor3f(0.2, 0.2, 0.2);
+			glScalef(50, 10, 60);
+			glutSolidCube(1);
+		glPopMatrix();
+
+		glPushMatrix();
+			glTranslatef(0, 30, 0);
+			for (int i = 0; i < METATRAVELLER_COUNT; i++)
+			{
+				// TODO: Implement toggle button
+
+				// glColor3f(1, 0.9, 0.3);
+				// glPushMatrix();
+				// 	glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
+				// 	glTranslatef(0, 0, 20);
+				// 	glRotatef(90, 0, 1, 0);
+				// 	glutSolidTorus(0.05, 5, 4, 36);
+				// glPopMatrix();
+				
+				glColor3f(0.8, 0, 0.8);
+				glPushMatrix();
+					glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
+					glTranslatef(0, 0, 20);
+					glRotatef(metatravellerAngles[i], 1, 0, 0);
+					glTranslatef(0, 0, 5);
+					glutSolidSphere(1, 12, 12);
+				glPopMatrix();
+			}
+		glPopMatrix();
+	glPopMatrix();
+}
+
+void drawMobiusStrip()
+{
+	glPushMatrix();
+		glTranslatef(120, 0, 0);
+		glPushMatrix();
+			glColor3f(0.2, 0.2, 0.2);
+			glScalef(50, 10, 60);
+			glutSolidCube(1);
+		glPopMatrix();
+
+		float offset = (sin(deg2rad(5)) * MOBIUS_STRUP_RADIUS) / 2.0;
+		glPushMatrix();
+			glTranslatef(0, 20, 0);
+
+			// Planks
+			for (int i = 0; i < 360; i += 10)
+			{
+				glPushMatrix();
+					glColor3f(0.5, 0.3, 0.0);
+					glRotatef(i, 0, 1, 0);
+					glTranslatef(0, 0, MOBIUS_STRUP_RADIUS);
+					glRotatef(i / 2.0, 1, 0, 0);
+
+					glBegin(GL_TRIANGLES);
+					glNormal3f(0, 0, 1);
+					glTexCoord2f(0, 0); glVertex3f(-offset, 5, 0);
+					glTexCoord2f(0, 1); glVertex3f(-offset, -5, 0);
+					glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
+
+					glTexCoord2f(1, 0); glVertex3f(offset, cos(deg2rad(5)) * -5, sin(deg2rad(5)) * -5);
+					glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
+					glTexCoord2f(1, 0); glVertex3f(-offset, -5, 0);
+					glEnd();
+				glPopMatrix();
+			}
+
+			// Rail
 			glPushMatrix();
-				glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
-				glTranslatef(0, 0, 20);
-				glRotatef(90, 0, 1, 0);
-				glutSolidTorus(0.05, 5, 4, 36);
+				glColor3f(0.3, 0.3, 0.3);
+				glRotatef(90, 1, 0, 0);
+				glutSolidTorus(0.2, MOBIUS_STRUP_RADIUS, 4, 36);
 			glPopMatrix();
-			
-			glColor3f(0.8, 0, 0.8);
-			glPushMatrix();
-				glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
-				glTranslatef(0, 0, 20);
-				glRotatef(metatravellerAngles[i], 1, 0, 0);
-				glTranslatef(0, 0, 5);
-				glutSolidSphere(1, 12, 12);
-			glPopMatrix();
-		}
+
+			// Balls
+			float angleOffset = 360.0 / MOBIUS_STRIP_BALLS;
+			for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
+			{
+				glPushMatrix();
+					glColor3f(0.6, 0.6, 0.6);
+					glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
+					glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
+					glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
+					glTranslatef(0, 2, 0);
+					glutSolidSphere(2, 12, 12);
+				glPopMatrix();
+			}
+		glPopMatrix();
 	glPopMatrix();
 }
 
@@ -394,6 +470,7 @@ void display()
 {
 	float lpos[4] = {0., 90., 0., 1.0};  //light's position
 
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 	glMatrixMode(GL_MODELVIEW);
@@ -410,6 +487,7 @@ void display()
 	drawFloor();
 	drawMuseum();
 	drawMetatravellers();
+	drawMobiusStrip();
 
     // glFlush();
 	glutSwapBuffers();
