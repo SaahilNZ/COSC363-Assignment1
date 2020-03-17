@@ -43,6 +43,7 @@ float cam_z = -PLANE_Z / 2;
 
 int metatravellerAngles[METATRAVELLER_COUNT];
 int mobiusStripBallAngle = 0;
+float mobiusStripVertices[74][3];
 
 GLuint texIds[9];
 
@@ -61,6 +62,48 @@ void timer(int value)
 
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, 0);
+}
+
+float* rotateVectorX(float vec[3], float rot)
+{
+	float newVec[3] =
+	{
+		vec[0],
+		(cosf(deg2rad(rot)) * vec[1]) - (sinf(deg2rad(rot)) * vec[2]),
+		(sinf(deg2rad(rot)) * vec[1]) + (cosf(deg2rad(rot)) * vec[2]),
+	};
+	vec[0] = newVec[0];
+	vec[1] = newVec[1];
+	vec[2] = newVec[2];
+	return vec;
+}
+
+float* rotateVectorY(float vec[], float rot)
+{
+	float newVec[3] =
+	{
+		(cosf(deg2rad(rot)) * vec[0]) + (sinf(deg2rad(rot)) * vec[2]),
+		vec[1],
+		-(sinf(deg2rad(rot)) * vec[0]) + (cosf(deg2rad(rot)) * vec[2]),
+	};
+	vec[0] = newVec[0];
+	vec[1] = newVec[1];
+	vec[2] = newVec[2];
+	return vec;
+}
+
+float* rotateVectorZ(float vec[], float rot)
+{
+	float newVec[3] =
+	{
+		(cosf(deg2rad(rot)) * vec[0]) - (sinf(deg2rad(rot)) * vec[1]),
+		(sinf(deg2rad(rot)) * vec[0]) + (cosf(deg2rad(rot)) * vec[1]),
+		vec[2],
+	};
+	vec[0] = newVec[0];
+	vec[1] = newVec[1];
+	vec[2] = newVec[2];
+	return vec;
 }
 
 void loadTextures()
@@ -409,59 +452,81 @@ void drawMetatravellers()
 void drawMobiusStrip()
 {
 	glPushMatrix();
-		glTranslatef(120, 0, 0);
-		glPushMatrix();
-			glColor3f(0.2, 0.2, 0.2);
-			glScalef(50, 10, 60);
-			glutSolidCube(1);
-		glPopMatrix();
+		// glTranslatef(120, 0, 0);
+		// glRotatef(90, 0, 1, 0);
+		// glPushMatrix();
+		// 	glColor3f(0.2, 0.2, 0.2);
+		// 	glScalef(50, 10, 60);
+		// 	glutSolidCube(1);
+		// glPopMatrix();
 
-		float offset = (sin(deg2rad(5)) * MOBIUS_STRUP_RADIUS) / 2.0;
+		// float offset = (sin(deg2rad(5)) * MOBIUS_STRUP_RADIUS);
+		// glPushMatrix();
+		// 	glTranslatef(0, 20, 0);
+
+		// 	// Planks
+		// 	for (int i = 0; i < 360; i += 10)
+		// 	{
+		// 		glPushMatrix();
+		// 			glColor3f(0.5, 0.3, 0.0);
+		// 			glRotatef(i, 0, 1, 0);
+		// 			glTranslatef(0, 0, MOBIUS_STRUP_RADIUS);
+		// 			glRotatef(i / 2.0, 1, 0, 0);
+
+		// 			glBegin(GL_TRIANGLES);
+		// 			glNormal3f(0, 0, 1);
+		// 			glTexCoord2f(0, 0); glVertex3f(-offset, 5, 0);
+		// 			glTexCoord2f(0, 1); glVertex3f(-offset, -5, 0);
+		// 			glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
+
+		// 			glTexCoord2f(1, 0); glVertex3f(offset, cos(deg2rad(5)) * -5, sin(deg2rad(5)) * -5);
+		// 			glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
+		// 			glTexCoord2f(1, 0); glVertex3f(-offset, -5, 0);
+		// 			glEnd();
+		// 		glPopMatrix();
+		// 	}
+
+		// 	// Rail
+		// 	glPushMatrix();
+		// 		glColor3f(0.3, 0.3, 0.3);
+		// 		glRotatef(90, 1, 0, 0);
+		// 		glutSolidTorus(0.2, MOBIUS_STRUP_RADIUS, 4, 36);
+		// 	glPopMatrix();
+
+		// 	// Balls
+		// 	float angleOffset = 360.0 / MOBIUS_STRIP_BALLS;
+		// 	for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
+		// 	{
+		// 		glPushMatrix();
+		// 			glColor3f(0.6, 0.6, 0.6);
+		// 			glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
+		// 			glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
+		// 			glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
+		// 			glTranslatef(0, 2, 0);
+		// 			glutSolidSphere(2, 12, 12);
+		// 		glPopMatrix();
+		// 	}
+		// glPopMatrix();
+
 		glPushMatrix();
 			glTranslatef(0, 20, 0);
-
-			// Planks
-			for (int i = 0; i < 360; i += 10)
+			glBegin(GL_TRIANGLES);
+			for (int i = 0; i < 37; i++)
 			{
-				glPushMatrix();
-					glColor3f(0.5, 0.3, 0.0);
-					glRotatef(i, 0, 1, 0);
-					glTranslatef(0, 0, MOBIUS_STRUP_RADIUS);
-					glRotatef(i / 2.0, 1, 0, 0);
+				float* v1 = mobiusStripVertices[2 * i];
+				float* v2 = mobiusStripVertices[(2 * i + 1) % 74];
+				float* v3 = mobiusStripVertices[(2 * i + 2) % 74];
+				float* v4 = mobiusStripVertices[(2 * i + 3) % 74];
 
-					glBegin(GL_TRIANGLES);
-					glNormal3f(0, 0, 1);
-					glTexCoord2f(0, 0); glVertex3f(-offset, 5, 0);
-					glTexCoord2f(0, 1); glVertex3f(-offset, -5, 0);
-					glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
+				glVertex3f(v1[0], v1[1], v1[2]);
+				glVertex3f(v2[0], v2[1], v2[2]);
+				glVertex3f(v3[0], v3[1], v3[2]);
 
-					glTexCoord2f(1, 0); glVertex3f(offset, cos(deg2rad(5)) * -5, sin(deg2rad(5)) * -5);
-					glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
-					glTexCoord2f(1, 0); glVertex3f(-offset, -5, 0);
-					glEnd();
-				glPopMatrix();
+				glVertex3f(v4[0], v4[1], v4[2]);
+				glVertex3f(v3[0], v3[1], v3[2]);
+				glVertex3f(v2[0], v2[1], v2[2]);
 			}
-
-			// Rail
-			glPushMatrix();
-				glColor3f(0.3, 0.3, 0.3);
-				glRotatef(90, 1, 0, 0);
-				glutSolidTorus(0.2, MOBIUS_STRUP_RADIUS, 4, 36);
-			glPopMatrix();
-
-			// Balls
-			float angleOffset = 360.0 / MOBIUS_STRIP_BALLS;
-			for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
-			{
-				glPushMatrix();
-					glColor3f(0.6, 0.6, 0.6);
-					glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
-					glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
-					glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
-					glTranslatef(0, 2, 0);
-					glutSolidSphere(2, 12, 12);
-				glPopMatrix();
-			}
+			glEnd();
 		glPopMatrix();
 	glPopMatrix();
 }
@@ -501,12 +566,49 @@ void initialiseMetatravellers()
 	}
 }
 
+void initialiseMobiusStrip()
+{
+	for (int i = 0; i < 37; i++)
+	{
+		mobiusStripVertices[2 * i][0] = 0;
+		mobiusStripVertices[2 * i][1] = 5;
+		mobiusStripVertices[2 * i][2] = 0;
+		
+		mobiusStripVertices[2 * i + 1][0] = 0;
+		mobiusStripVertices[2 * i + 1][1] = -5;
+		mobiusStripVertices[2 * i + 1][2] = 0;
+
+		float* v1rx = rotateVectorX(mobiusStripVertices[2 * i], 5 * i);
+		float* v2rx = rotateVectorX(mobiusStripVertices[2 * i + 1], 5 * i);
+
+		mobiusStripVertices[2 * i][0] = v1rx[0];
+		mobiusStripVertices[2 * i][1] = v1rx[1];
+		mobiusStripVertices[2 * i][2] = v1rx[2] + MOBIUS_STRUP_RADIUS;
+		
+		mobiusStripVertices[2 * i + 1][0] = v2rx[0];
+		mobiusStripVertices[2 * i + 1][1] = v2rx[1];
+		mobiusStripVertices[2 * i + 1][2] = v2rx[2] + MOBIUS_STRUP_RADIUS;
+
+		float* v1ry = rotateVectorY(mobiusStripVertices[2 * i], 10 * i);
+		float* v2ry = rotateVectorY(mobiusStripVertices[2 * i + 1], 10 * i);
+
+		mobiusStripVertices[2 * i][0] = v1ry[0];
+		mobiusStripVertices[2 * i][1] = v1ry[1];
+		mobiusStripVertices[2 * i][2] = v1ry[2];
+		
+		mobiusStripVertices[2 * i + 1][0] = v2ry[0];
+		mobiusStripVertices[2 * i + 1][1] = v2ry[1];
+		mobiusStripVertices[2 * i + 1][2] = v2ry[2];
+	}
+}
+
 void initialize()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	loadTextures();
 	initialiseMetatravellers();
+	initialiseMobiusStrip();
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
