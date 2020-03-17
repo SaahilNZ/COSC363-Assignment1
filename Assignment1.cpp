@@ -182,53 +182,11 @@ void loadTextures()
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
-//-- Loads mesh data in OFF format    -------------------------------------
-void loadMeshFile(const char* fname)  
+void normal(float v1[3], float v2[3], float v3[3])
 {
-	ifstream fp_in;
-	int num, ne;
-
-	fp_in.open(fname, ios::in);
-	if(!fp_in.is_open())
-	{
-		cout << "Error opening mesh file" << endl;
-		exit(1);
-	}
-
-	fp_in.ignore(INT_MAX, '\n');				//ignore first line
-	fp_in >> nvrt >> ntri >> ne;			    // read number of vertices, polygons, edges
-
-    x = new float[nvrt];                        //create arrays
-    y = new float[nvrt];
-    z = new float[nvrt];
-
-    t1 = new int[ntri];
-    t2 = new int[ntri];
-    t3 = new int[ntri];
-
-	for(int i=0; i < nvrt; i++)                         //read vertex list 
-		fp_in >> x[i] >> y[i] >> z[i];
-
-	for(int i=0; i < ntri; i++)                         //read polygon list 
-	{
-		fp_in >> num >> t1[i] >> t2[i] >> t3[i];
-		if(num != 3)
-		{
-			cout << "ERROR: Polygon with index " << i  << " is not a triangle." << endl;  //not a triangle!!
-			exit(1);
-		}
-	}
-
-	fp_in.close();
-	cout << " File successfully read." << endl;
-}
-
-//--Function to compute the normal vector of a triangle with index tindx ----------
-void normal(int tindx)
-{
-	float x1 = x[t1[tindx]], x2 = x[t2[tindx]], x3 = x[t3[tindx]];
-	float y1 = y[t1[tindx]], y2 = y[t2[tindx]], y3 = y[t3[tindx]];
-	float z1 = z[t1[tindx]], z2 = z[t2[tindx]], z3 = z[t3[tindx]];
+	float x1 = v1[0], x2 = v2[0], x3 = v3[0];
+	float y1 = v1[1], y2 = v2[1], y3 = v3[1];
+	float z1 = v1[2], z2 = v2[2], z3 = v3[2];
 	float nx, ny, nz;
 	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
 	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
@@ -509,6 +467,7 @@ void drawMobiusStrip()
 		// glPopMatrix();
 
 		glPushMatrix();
+			glColor3f(0.6, 0.0, 1.0);
 			glTranslatef(0, 20, 0);
 			glBegin(GL_TRIANGLES);
 			for (int i = 0; i < 37; i++)
@@ -518,15 +477,31 @@ void drawMobiusStrip()
 				float* v3 = mobiusStripVertices[(2 * i + 2) % 74];
 				float* v4 = mobiusStripVertices[(2 * i + 3) % 74];
 
+				normal(v1, v2, v3);
 				glVertex3f(v1[0], v1[1], v1[2]);
 				glVertex3f(v2[0], v2[1], v2[2]);
 				glVertex3f(v3[0], v3[1], v3[2]);
 
+				normal(v4, v3, v2);
 				glVertex3f(v4[0], v4[1], v4[2]);
 				glVertex3f(v3[0], v3[1], v3[2]);
 				glVertex3f(v2[0], v2[1], v2[2]);
 			}
 			glEnd();
+			
+			// Balls
+			float angleOffset = 720.0 / MOBIUS_STRIP_BALLS;
+			for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
+			{
+				glPushMatrix();
+					glColor3f(0.6, 0.6, 0.6);
+					glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
+					glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
+					glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
+					glTranslatef(0, 2.5, 0);
+					glutSolidSphere(2, 12, 12);
+				glPopMatrix();
+			}
 		glPopMatrix();
 	glPopMatrix();
 }
