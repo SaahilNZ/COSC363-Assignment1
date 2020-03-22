@@ -9,6 +9,7 @@
 
 #define PLANE_X 1000
 #define PLANE_Z 1000
+#define FLOOR_SCALE 8.0
 #define PLANE_BOUNDARY 10
 #define PLANE_TILE_SIZE 10
 #define MOVE_SPEED 3
@@ -178,8 +179,6 @@ void loadTextures()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 void normal(float v1[3], float v2[3], float v3[3])
@@ -196,8 +195,9 @@ void normal(float v1[3], float v2[3], float v3[3])
 
 void drawSkybox()
 {
-	glDisable(GL_LIGHTING);
+	// glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	// glColor3f(0.2, 0.6, 0.8);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
@@ -286,29 +286,26 @@ void drawSkybox()
 	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
 
-	glEnable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	// glEnable(GL_LIGHTING);
+	// glDisable(GL_TEXTURE_2D);
 }
 
 //----------draw a floor plane-------------------
 void drawFloor()
 {
-	bool flag = false;
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, texIds[7]);
 
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
-	glColor3f(0.6, 1.0, 0.8);
 	for(int x = -PLANE_X; x <= PLANE_X; x += PLANE_TILE_SIZE)
 	{
 		for(int z = -PLANE_Z; z <= PLANE_Z; z += PLANE_TILE_SIZE)
 		{
-			if(flag) glColor3f(0.6, 1.0, 0.8);
-			else glColor3f(0.8, 1.0, 0.6);
-			glVertex3f(x, 0, z);
-			glVertex3f(x, 0, z + PLANE_TILE_SIZE);
-			glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
-			glVertex3f(x + PLANE_TILE_SIZE, 0, z);
-			flag = !flag;
+			glTexCoord2f((x + 0) / FLOOR_SCALE, (z + 0) / FLOOR_SCALE); glVertex3f(x, 0, z);
+			glTexCoord2f((x + 1) / FLOOR_SCALE, (z + 0) / FLOOR_SCALE); glVertex3f(x, 0, z + PLANE_TILE_SIZE);
+			glTexCoord2f((x + 1) / FLOOR_SCALE, (z + 1) / FLOOR_SCALE); glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
+			glTexCoord2f((x + 0) / FLOOR_SCALE, (z + 1) / FLOOR_SCALE); glVertex3f(x + PLANE_TILE_SIZE, 0, z);
 		}
 	}
 	glEnd();
@@ -410,63 +407,17 @@ void drawMetatravellers()
 void drawMobiusStrip()
 {
 	glPushMatrix();
-		// glTranslatef(120, 0, 0);
-		// glRotatef(90, 0, 1, 0);
-		// glPushMatrix();
-		// 	glColor3f(0.2, 0.2, 0.2);
-		// 	glScalef(50, 10, 60);
-		// 	glutSolidCube(1);
-		// glPopMatrix();
-
-		// float offset = (sin(deg2rad(5)) * MOBIUS_STRUP_RADIUS);
-		// glPushMatrix();
-		// 	glTranslatef(0, 20, 0);
-
-		// 	// Planks
-		// 	for (int i = 0; i < 360; i += 10)
-		// 	{
-		// 		glPushMatrix();
-		// 			glColor3f(0.5, 0.3, 0.0);
-		// 			glRotatef(i, 0, 1, 0);
-		// 			glTranslatef(0, 0, MOBIUS_STRUP_RADIUS);
-		// 			glRotatef(i / 2.0, 1, 0, 0);
-
-		// 			glBegin(GL_TRIANGLES);
-		// 			glNormal3f(0, 0, 1);
-		// 			glTexCoord2f(0, 0); glVertex3f(-offset, 5, 0);
-		// 			glTexCoord2f(0, 1); glVertex3f(-offset, -5, 0);
-		// 			glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
-
-		// 			glTexCoord2f(1, 0); glVertex3f(offset, cos(deg2rad(5)) * -5, sin(deg2rad(5)) * -5);
-		// 			glTexCoord2f(1, 1); glVertex3f(offset, cos(deg2rad(5)) * 5, sin(deg2rad(5)) * 5);
-		// 			glTexCoord2f(1, 0); glVertex3f(-offset, -5, 0);
-		// 			glEnd();
-		// 		glPopMatrix();
-		// 	}
-
-		// 	// Rail
-		// 	glPushMatrix();
-		// 		glColor3f(0.3, 0.3, 0.3);
-		// 		glRotatef(90, 1, 0, 0);
-		// 		glutSolidTorus(0.2, MOBIUS_STRUP_RADIUS, 4, 36);
-		// 	glPopMatrix();
-
-		// 	// Balls
-		// 	float angleOffset = 360.0 / MOBIUS_STRIP_BALLS;
-		// 	for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
-		// 	{
-		// 		glPushMatrix();
-		// 			glColor3f(0.6, 0.6, 0.6);
-		// 			glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
-		// 			glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
-		// 			glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
-		// 			glTranslatef(0, 2, 0);
-		// 			glutSolidSphere(2, 12, 12);
-		// 		glPopMatrix();
-		// 	}
-		// glPopMatrix();
+		// Base
+		glTranslatef(120, 0, 0);
+		glRotatef(90, 0, 1, 0);
+		glPushMatrix();
+			glColor3f(0.2, 0.2, 0.2);
+			glScalef(50, 10, 60);
+			glutSolidCube(1);
+		glPopMatrix();
 
 		glPushMatrix();
+			// Mobius Strip
 			glColor3f(0.6, 0.0, 1.0);
 			glTranslatef(0, 20, 0);
 			glBegin(GL_TRIANGLES);
@@ -505,6 +456,14 @@ void drawMobiusStrip()
 		glPopMatrix();
 	glPopMatrix();
 }
+
+
+// For Newton's Cradle:
+// https://en.wikipedia.org/wiki/Pendulum_(mathematics)
+// Use a min call and a max call on the simple gravity pendulum differential equation
+// min should be used on one end of the Newton's Cradle, while max should be used on the other
+
+
 
 void display()
 {
@@ -587,6 +546,7 @@ void initialize()
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
