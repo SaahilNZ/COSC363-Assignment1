@@ -24,10 +24,16 @@
 #define MOBIUS_STRUP_RADIUS 20
 #define MOBIUS_STRIP_SPEED 1
 #define MOBIUS_STRIP_BALLS 3
+#define CRADLE_MAX_ANGLE 45
+#define CRADLE_LENGTH 40
+#define BALL_MASS 4
+#define GRAVITY 9.80665
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
 #define rad2deg(rad) (180 * rad) / (4.0 * atan(1.0))
 #define clamp(val, min, max) val < min ? min : (val > max ? max : val)
+#define min(val1, val2) (val1 < val2 ? val1 : val2)
+#define max(val1, val2) (val1 > val2 ? val1 : val2)
 
 using namespace std;
 
@@ -42,9 +48,12 @@ float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
 
+int time = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
 int mobiusStripBallAngle = 0;
 float mobiusStripVertices[74][3];
+
+float cradleAngle = CRADLE_MAX_ANGLE;
 
 GLuint texIds[9];
 
@@ -60,6 +69,8 @@ void timer(int value)
 {
 	calcMetatravellerAngles();
 	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
+	cradleAngle = (-(BALL_MASS * GRAVITY) * (CRADLE_MAX_ANGLE * sin(deg2rad(time * 2)))) / CRADLE_LENGTH;
+	time = (time + 1) % 360;
 
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, 0);
@@ -407,9 +418,9 @@ void drawMetatravellers()
 void drawMobiusStrip()
 {
 	glPushMatrix();
-		// Base
 		glTranslatef(120, 0, 0);
 		glRotatef(90, 0, 1, 0);
+		// Base
 		glPushMatrix();
 			glColor3f(0.2, 0.2, 0.2);
 			glScalef(50, 10, 60);
@@ -463,7 +474,137 @@ void drawMobiusStrip()
 // Use a min call and a max call on the simple gravity pendulum differential equation
 // min should be used on one end of the Newton's Cradle, while max should be used on the other
 
+void drawNewtonsCradle()
+{
+	glPushMatrix();
+		glTranslatef(-120, 0, 0);
+		glRotatef(-90, 0, 1, 0);
+		// Base
+		glPushMatrix();
+			glColor3f(0.2, 0.2, 0.2);
+			glScalef(50, 10, 60);
+			glutSolidCube(1);
+		glPopMatrix();
 
+		// Pendulums
+		glPushMatrix();
+			glTranslatef(0, 10, 0);
+
+			glPushMatrix();
+				glColor3f(0.5, 0.5, 0.5);
+				glTranslatef(-12, CRADLE_LENGTH, 0);
+				glRotatef(min(0, cradleAngle), 0, 0, 1);
+				glTranslatef(-0, -CRADLE_LENGTH, 0);
+				glPushMatrix();
+					glRotatef(-70, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(-110, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glutSolidSphere(3, 12, 12);
+			glPopMatrix();
+
+			glPushMatrix();
+				glColor3f(0.5, 0.5, 0.5);
+				glTranslatef(-6, 0, 0);
+				glPushMatrix();
+					glRotatef(-70, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(-110, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glutSolidSphere(3, 12, 12);
+			glPopMatrix();
+
+			glPushMatrix();
+				glColor3f(0.5, 0.5, 0.5);
+				glPushMatrix();
+					glRotatef(-70, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(-110, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glutSolidSphere(3, 12, 12);
+			glPopMatrix();
+
+			glPushMatrix();
+				glColor3f(0.5, 0.5, 0.5);
+				glTranslatef(6, 0, 0);
+				glPushMatrix();
+					glRotatef(-70, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(-110, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glutSolidSphere(3, 12, 12);
+			glPopMatrix();
+
+			glPushMatrix();
+				glColor3f(0.5, 0.5, 0.5);
+				glTranslatef(12, CRADLE_LENGTH, 0);
+				glRotatef(max(0, cradleAngle), 0, 0, 1);
+				glTranslatef(0, -CRADLE_LENGTH, 0);
+				glPushMatrix();
+					glRotatef(-70, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(-110, 1, 0, 0);
+					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
+				glPopMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glutSolidSphere(3, 12, 12);
+			glPopMatrix();
+		glPopMatrix();
+
+		// Frame
+		glPushMatrix();
+			glColor3f(0.5, 0.5, 0.5);
+			glPushMatrix();
+				glTranslatef(-21.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), (CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(90, 0, 1, 0);
+				glutSolidCylinder(1.5, 43, 12, 12);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(-21.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), -(CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(90, 0, 1, 0);
+				glutSolidCylinder(1.5, 43, 12, 12);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(20, 0, (CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(-90, 1, 0, 0);
+				glutSolidCylinder(1.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), 12, 12);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(-20, 0, (CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(-90, 1, 0, 0);
+				glutSolidCylinder(1.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), 12, 12);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(20, 0, -(CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(-90, 1, 0, 0);
+				glutSolidCylinder(1.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), 12, 12);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(-20, 0, -(CRADLE_LENGTH * sin(deg2rad(20))));
+				glRotatef(-90, 1, 0, 0);
+				glutSolidCylinder(1.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), 12, 12);
+			glPopMatrix();
+		glPopMatrix();
+	glPopMatrix();
+}
 
 void display()
 {
@@ -487,6 +628,7 @@ void display()
 	drawMuseum();
 	drawMetatravellers();
 	drawMobiusStrip();
+	drawNewtonsCradle();
 
     // glFlush();
 	glutSwapBuffers();
@@ -546,7 +688,7 @@ void initialize()
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
