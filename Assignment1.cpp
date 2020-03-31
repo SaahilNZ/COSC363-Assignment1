@@ -206,11 +206,8 @@ void normal(float v1[3], float v2[3], float v3[3])
 
 void drawSkybox()
 {
-	// glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	// glColor3f(0.2, 0.6, 0.8);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
 	
 	// FRONT
@@ -296,17 +293,15 @@ void drawSkybox()
 	glTexCoord2f(0, 1);
 	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
 	glEnd();
-
-	// glEnable(GL_LIGHTING);
-	// glDisable(GL_TEXTURE_2D);
 }
 
 //----------draw a floor plane-------------------
 void drawFloor()
 {
+	glDisable(GL_LIGHTING);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, texIds[7]);
-
+	glColor3f(1, 1, 1);
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
 	for(int x = -PLANE_X; x <= PLANE_X; x += PLANE_TILE_SIZE)
@@ -320,24 +315,79 @@ void drawFloor()
 		}
 	}
 	glEnd();
+	glEnable(GL_LIGHTING);
 }
 
 void drawMuseum()
 {
-	glColor3f(0.8, 0.5, 0.0);
-	// remove this after
-	glPushMatrix();
-		glutSolidSphere(5, 12, 12);
-	glPopMatrix();
-
+	glColor3f(1, 1, 1);
 	float angle = 360.0 / MUSEUM_SIDES;
+	float wallLength = tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2;
+	glDisable(GL_LIGHTING);
 	for (int i = 1; i < MUSEUM_SIDES; i++)
 	{
 		glPushMatrix();
 			glRotatef((angle * i) + 90, 0, 1, 0);
 			glTranslatef(MUSEUM_RADIUS, 50, 0);
-			glScalef(10, 100, tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2);
-			glutSolidCube(1);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glBindTexture(GL_TEXTURE_2D, texIds[6]);
+			int numColumns = (int)ceil(wallLength / 20.0);
+
+			glPushMatrix();
+				glTranslatef(-5, -50, -100);
+				glBegin(GL_QUADS);
+					glNormal3f(0, 0, -1);
+					for (int x = 0; x < numColumns; x++)
+					{
+						for (int y = 0; y < 5; y++)
+						{
+							float left = min(20 * (x + 1), wallLength);
+							float texCoordLeft;
+							if (((int)left) % 20 == 0)
+							{
+								texCoordLeft = 1;
+							}
+							else
+							{
+								texCoordLeft = (wallLength - (20 * x)) / 20.0;
+							}
+
+							glTexCoord2f(0, 0); glVertex3f(0, 20 * y, 20 * x);
+							glTexCoord2f(texCoordLeft, 0); glVertex3f(0, 20 * y, left);
+							glTexCoord2f(texCoordLeft, 1); glVertex3f(0, 20 * (y + 1), left);
+							glTexCoord2f(0, 1); glVertex3f(0, 20 * (y + 1), 20 * x);
+						}
+					}
+				glEnd();
+			glPopMatrix();
+
+			glPushMatrix();
+				glTranslatef(5, -50, -100);
+				glBegin(GL_QUADS);
+					glNormal3f(0, 0, 1);
+					for (int x = 0; x < numColumns; x++)
+					{
+						for (int y = 0; y < 5; y++)
+						{
+							float left = min(20 * (x + 1), wallLength);
+							float texCoordLeft;
+							if (((int)left) % 20 == 0)
+							{
+								texCoordLeft = 1;
+							}
+							else
+							{
+								texCoordLeft = (wallLength - (20 * x)) / 20.0;
+							}
+
+							glTexCoord2f(0, 0); glVertex3f(0, 20 * y, 20 * x);
+							glTexCoord2f(texCoordLeft, 0); glVertex3f(0, 20 * y, left);
+							glTexCoord2f(texCoordLeft, 1); glVertex3f(0, 20 * (y + 1), left);
+							glTexCoord2f(0, 1); glVertex3f(0, 20 * (y + 1), 20 * x);
+						}
+					}
+				glEnd();
+			glPopMatrix();
 		glPopMatrix();
 	}
 
@@ -346,16 +396,55 @@ void drawMuseum()
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
+		// glPushMatrix();
+		// 	glRotatef((angle * i), 0, 1, 0);
+		// 	glTranslatef(pillarDistance, 0, 0);
+		// 	glRotatef(-90, 1, 0, 0);
+		// 	glutSolidCylinder(10, 100, 12, 24);
+		// glPopMatrix();
+
+		int cylinderSides = 12;
+		float xScale = 1;
+		float yScale = 5;
+
 		glPushMatrix();
 			glRotatef((angle * i), 0, 1, 0);
 			glTranslatef(pillarDistance, 0, 0);
-			glRotatef(-90, 1, 0, 0);
-			glutSolidCylinder(10, 100, 12, 24);
+
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glBindTexture(GL_TEXTURE_2D, texIds[8]);
+			glBegin(GL_QUADS);
+				for (int i = 0; i <= cylinderSides; i++)
+				{
+					float v1[3] = {10, 0, 0};
+					float v2[3] = {10, 100, 0};
+					float v3[3] = {10, 100, 0};
+					float v4[3] = {10, 0, 0};
+					float normal[3] = {1, 0, 0};
+					float* v1ry = rotateVectorY(v1, (360.0 / cylinderSides) * i);
+					float* v2ry = rotateVectorY(v2, (360.0 / cylinderSides) * i);
+					float* v3ry = rotateVectorY(v3, (360.0 / cylinderSides) * (i + 1));
+					float* v4ry = rotateVectorY(v4, (360.0 / cylinderSides) * (i + 1));
+					float* v12n = rotateVectorY(normal, (360.0 / cylinderSides) * i);
+					float* v34n = rotateVectorY(normal, (360.0 / cylinderSides) * (i + 1));
+
+					glNormal3f(v12n[0], v12n[1], v12n[2]);
+					glTexCoord2f((xScale / cylinderSides) * i, 0); 				  glVertex3f(v1[0], v1[1], v1[2]);
+					glTexCoord2f((xScale / cylinderSides) * i, 1); glVertex3f(v2[0], v2[1], v2[2]);
+
+					glNormal3f(v34n[0], v34n[1], v34n[2]);
+					glTexCoord2f((xScale / cylinderSides) * (i + 1), 1); glVertex3f(v3[0], v3[1], v3[2]);
+					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); 						   glVertex3f(v4[0], v4[1], v4[2]);
+				}
+			glEnd();
 		glPopMatrix();
 	}
+	glEnable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 
 	// roof
 	// TODO: change glutSolidCone to gluCylinder (for texcoords)
+	glColor3f(0.3, 0.3, 0.3);
 	glPushMatrix();
 		glTranslatef(0, 100, 0);
 		glRotatef(-90, 1, 0, 0);
@@ -363,19 +452,13 @@ void drawMuseum()
 	glPopMatrix();
 
 	// floor
-	// TODO: generate floor using points and texcoords 
-	glEnable(GL_TEXTURE_2D);
-	// glEnable(GL_TEXTURE_GEN_S);
-	// glEnable(GL_TEXTURE_GEN_T);
-	glBindTexture(GL_TEXTURE_2D, texIds[7]);
+	// TODO: generate floor using points and texcoords
+	glColor3f(0.5, 0, 0.8);
 	glPushMatrix();
 		glTranslatef(0, -0.99, 0);
 		glRotatef(-90, 1, 0, 0);
 		glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
 	glPopMatrix();
-	// glDisable(GL_TEXTURE_GEN_S);
-	// glDisable(GL_TEXTURE_GEN_T);
-	glDisable(GL_TEXTURE_2D);
 }
 
 void drawMetatravellers()
@@ -608,7 +691,8 @@ void drawNewtonsCradle()
 
 void display()
 {
-	float lpos[4] = {0., 90., 0., 1.0};  //light's position
+	float outerLightPos[4] = {0., 1000., 0., 10.0};  //light's position
+	float innerLightPos[4] = {0., 90., 0., 1.0};  //light's position
 
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
@@ -620,7 +704,8 @@ void display()
 	float look_z = sin(deg2rad(angle)) * 200;
 
 	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, LOOK_HEIGHT, cam_z + look_z, 0, 1, 0);
-	glLightfv(GL_LIGHT0, GL_POSITION, lpos);   //set light position
+	// glLightfv(GL_LIGHT0, GL_POSITION, innerLightPos);   //set light position
+	glLightfv(GL_LIGHT1, GL_POSITION, outerLightPos);   //set light position
 
 	drawSkybox();
 
@@ -688,6 +773,7 @@ void initialize()
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
