@@ -396,14 +396,7 @@ void drawMuseum()
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
-		// glPushMatrix();
-		// 	glRotatef((angle * i), 0, 1, 0);
-		// 	glTranslatef(pillarDistance, 0, 0);
-		// 	glRotatef(-90, 1, 0, 0);
-		// 	glutSolidCylinder(10, 100, 12, 24);
-		// glPopMatrix();
-
-		int cylinderSides = 12;
+		int cylinderSides = 24;
 		float xScale = 1;
 		float yScale = 5;
 
