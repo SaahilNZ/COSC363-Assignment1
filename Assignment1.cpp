@@ -209,90 +209,92 @@ void drawSkybox()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
-	
-	// FRONT
-	glBindTexture(GL_TEXTURE_2D, texIds[0]);
-	glBegin(GL_QUADS);
-	glNormal3f(0, 0, -1);
-	glTexCoord2f(0, 0);
-	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top left
-	glEnd();
-	
-	// BACK
-	glBindTexture(GL_TEXTURE_2D, texIds[1]);
-	glBegin(GL_QUADS);
-	glNormal3f(0, 0, 1);
-	glTexCoord2f(0, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
-	glEnd();
-	
-	// LEFT
-	glBindTexture(GL_TEXTURE_2D, texIds[2]);
-	glBegin(GL_QUADS);
-	glNormal3f(-1, 0, 0);
-	glTexCoord2f(0, 0);
-	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
-	glEnd();
-	
-	// RIGHT
-	glBindTexture(GL_TEXTURE_2D, texIds[3]);
-	glBegin(GL_QUADS);
-	glNormal3f(1, 0, 0);
-	glTexCoord2f(0, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top left
-	glEnd();
-	
-	// BOTTOM
-	glBindTexture(GL_TEXTURE_2D, texIds[4]);
-	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);
-	glTexCoord2f(0, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // top left
-	glEnd();
-	
-	// TOP
-	glBindTexture(GL_TEXTURE_2D, texIds[5]);
-	glBegin(GL_QUADS);
-	glNormal3f(0, -1, 0);
-	glTexCoord2f(0, 0);
-	glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // bottom left
-	glTexCoord2f(1, 0);
-	glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // bottom right
-	glTexCoord2f(1, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
-	glTexCoord2f(0, 1);
-	glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
-	glEnd();
+	glPushMatrix();
+		glTranslatef(0, skyBoxScale - 0.1, 0);
+		// FRONT
+		glBindTexture(GL_TEXTURE_2D, texIds[0]);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, -1);
+		glTexCoord2f(0, 0);
+		glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+		glTexCoord2f(1, 0);
+		glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top right
+		glTexCoord2f(0, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top left
+		glEnd();
+		
+		// BACK
+		glBindTexture(GL_TEXTURE_2D, texIds[1]);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1);
+		glTexCoord2f(0, 0);
+		glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+		glTexCoord2f(1, 0);
+		glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+		glTexCoord2f(0, 1);
+		glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+		glEnd();
+		
+		// LEFT
+		glBindTexture(GL_TEXTURE_2D, texIds[2]);
+		glBegin(GL_QUADS);
+		glNormal3f(-1, 0, 0);
+		glTexCoord2f(0, 0);
+		glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom left
+		glTexCoord2f(1, 0);
+		glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+		glTexCoord2f(0, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+		glEnd();
+		
+		// RIGHT
+		glBindTexture(GL_TEXTURE_2D, texIds[3]);
+		glBegin(GL_QUADS);
+		glNormal3f(1, 0, 0);
+		glTexCoord2f(0, 0);
+		glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+		glTexCoord2f(1, 0);
+		glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // top right
+		glTexCoord2f(0, 1);
+		glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // top left
+		glEnd();
+		
+		// BOTTOM
+		glBindTexture(GL_TEXTURE_2D, texIds[4]);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 1, 0);
+		glTexCoord2f(0, 0);
+		glVertex3f(-skyBoxScale, -skyBoxScale, skyBoxScale); // bottom left
+		glTexCoord2f(0, 1);
+		glVertex3f(-skyBoxScale, -skyBoxScale, -skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(skyBoxScale, -skyBoxScale, -skyBoxScale); // top right
+		glTexCoord2f(1, 0);
+		glVertex3f(skyBoxScale, -skyBoxScale, skyBoxScale); // top left
+		glEnd();
+		
+		// TOP
+		glBindTexture(GL_TEXTURE_2D, texIds[5]);
+		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
+		glTexCoord2f(0, 0);
+		glVertex3f(-skyBoxScale, skyBoxScale, -skyBoxScale); // bottom left
+		glTexCoord2f(1, 0);
+		glVertex3f(-skyBoxScale, skyBoxScale, skyBoxScale); // bottom right
+		glTexCoord2f(1, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, skyBoxScale); // top right
+		glTexCoord2f(0, 1);
+		glVertex3f(skyBoxScale, skyBoxScale, -skyBoxScale); // top left
+		glEnd();
+	glPopMatrix();
 }
 
 //----------draw a floor plane-------------------
@@ -323,7 +325,7 @@ void drawMuseum()
 	glColor3f(1, 1, 1);
 	float angle = 360.0 / MUSEUM_SIDES;
 	float wallLength = tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2;
-	glDisable(GL_LIGHTING);
+	// glDisable(GL_LIGHTING);
 	for (int i = 1; i < MUSEUM_SIDES; i++)
 	{
 		glPushMatrix();
@@ -336,7 +338,7 @@ void drawMuseum()
 			glPushMatrix();
 				glTranslatef(-5, -50, -100);
 				glBegin(GL_QUADS);
-					glNormal3f(0, 0, -1);
+					glNormal3f(-1, 0, 0);
 					for (int x = 0; x < numColumns; x++)
 					{
 						for (int y = 0; y < 5; y++)
@@ -364,7 +366,7 @@ void drawMuseum()
 			glPushMatrix();
 				glTranslatef(5, -50, -100);
 				glBegin(GL_QUADS);
-					glNormal3f(0, 0, 1);
+					glNormal3f(-1, 0, 0);
 					for (int x = 0; x < numColumns; x++)
 					{
 						for (int y = 0; y < 5; y++)
@@ -392,7 +394,6 @@ void drawMuseum()
 	}
 
 	// pillars
-	// TODO: change glutSolidCylinder to gluCylinder (for texcoords)
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
@@ -413,26 +414,21 @@ void drawMuseum()
 					float v2[3] = {10, 100, 0};
 					float v3[3] = {10, 100, 0};
 					float v4[3] = {10, 0, 0};
-					float normal[3] = {1, 0, 0};
 					float* v1ry = rotateVectorY(v1, (360.0 / cylinderSides) * i);
 					float* v2ry = rotateVectorY(v2, (360.0 / cylinderSides) * i);
 					float* v3ry = rotateVectorY(v3, (360.0 / cylinderSides) * (i + 1));
 					float* v4ry = rotateVectorY(v4, (360.0 / cylinderSides) * (i + 1));
-					float* v12n = rotateVectorY(normal, (360.0 / cylinderSides) * i);
-					float* v34n = rotateVectorY(normal, (360.0 / cylinderSides) * (i + 1));
 
-					glNormal3f(v12n[0], v12n[1], v12n[2]);
-					glTexCoord2f((xScale / cylinderSides) * i, 0); 				  glVertex3f(v1[0], v1[1], v1[2]);
+					normal(v1, v2, v3);
+					glTexCoord2f((xScale / cylinderSides) * i, 0); glVertex3f(v1[0], v1[1], v1[2]);
 					glTexCoord2f((xScale / cylinderSides) * i, 1); glVertex3f(v2[0], v2[1], v2[2]);
-
-					glNormal3f(v34n[0], v34n[1], v34n[2]);
 					glTexCoord2f((xScale / cylinderSides) * (i + 1), 1); glVertex3f(v3[0], v3[1], v3[2]);
-					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); 						   glVertex3f(v4[0], v4[1], v4[2]);
+					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); glVertex3f(v4[0], v4[1], v4[2]);
 				}
 			glEnd();
 		glPopMatrix();
 	}
-	glEnable(GL_LIGHTING);
+	// glEnable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
 
 	// roof
