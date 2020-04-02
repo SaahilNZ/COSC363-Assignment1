@@ -48,7 +48,7 @@ float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
 
-int time = 90;
+int sceneTime = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
 int mobiusStripBallAngle = 0;
 float mobiusStripVertices[74][3];
@@ -69,8 +69,8 @@ void timer(int value)
 {
 	calcMetatravellerAngles();
 	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
-	cradleAngle = (-(BALL_MASS * GRAVITY) * (CRADLE_MAX_ANGLE * sin(deg2rad(time * 2)))) / CRADLE_LENGTH;
-	time = (time + 1) % 360;
+	cradleAngle = (-(BALL_MASS * GRAVITY) * (CRADLE_MAX_ANGLE * sin(deg2rad(sceneTime * 2)))) / CRADLE_LENGTH;
+	sceneTime = (sceneTime + 1) % 360;
 
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, 0);
