@@ -37,6 +37,12 @@
 
 using namespace std;
 
+typedef struct {
+	float x;
+	float y;
+	float z;
+} Vector;
+
 //-- Globals --------------------------------------------------------------
 float *x, *y, *z;		//vertex coordinate arrays
 int *t1, *t2, *t3;		//triangles
@@ -51,7 +57,7 @@ float cam_z = -PLANE_Z / 2;
 int sceneTime = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
 int mobiusStripBallAngle = 0;
-float mobiusStripVertices[74][3];
+Vector mobiusStripVertices[74];
 
 float cradleAngle = CRADLE_MAX_ANGLE;
 
@@ -76,46 +82,43 @@ void timer(int value)
 	glutTimerFunc(10, timer, 0);
 }
 
-float* rotateVectorX(float vec[3], float rot)
+void rotateVectorX(Vector* vec, float rot)
 {
-	float newVec[3] =
+	Vector newVec =
 	{
-		vec[0],
-		(cosf(deg2rad(rot)) * vec[1]) - (sinf(deg2rad(rot)) * vec[2]),
-		(sinf(deg2rad(rot)) * vec[1]) + (cosf(deg2rad(rot)) * vec[2]),
+		vec->x,
+		(cosf(deg2rad(rot)) * vec->y) - (sinf(deg2rad(rot)) * vec->z),
+		(sinf(deg2rad(rot)) * vec->y) + (cosf(deg2rad(rot)) * vec->z),
 	};
-	vec[0] = newVec[0];
-	vec[1] = newVec[1];
-	vec[2] = newVec[2];
-	return vec;
+	vec->x = newVec.x;
+	vec->y = newVec.y;
+	vec->z = newVec.z;
 }
 
-float* rotateVectorY(float vec[], float rot)
+void rotateVectorY(Vector* vec, float rot)
 {
-	float newVec[3] =
+	Vector newVec =
 	{
-		(cosf(deg2rad(rot)) * vec[0]) + (sinf(deg2rad(rot)) * vec[2]),
-		vec[1],
-		-(sinf(deg2rad(rot)) * vec[0]) + (cosf(deg2rad(rot)) * vec[2]),
+		(cosf(deg2rad(rot)) * vec->x) + (sinf(deg2rad(rot)) * vec->z),
+		vec->y,
+		-(sinf(deg2rad(rot)) * vec->x) + (cosf(deg2rad(rot)) * vec->z),
 	};
-	vec[0] = newVec[0];
-	vec[1] = newVec[1];
-	vec[2] = newVec[2];
-	return vec;
+	vec->x = newVec.x;
+	vec->y = newVec.y;
+	vec->z = newVec.z;
 }
 
-float* rotateVectorZ(float vec[], float rot)
+void rotateVectorZ(Vector* vec, float rot)
 {
-	float newVec[3] =
+	Vector newVec =
 	{
-		(cosf(deg2rad(rot)) * vec[0]) - (sinf(deg2rad(rot)) * vec[1]),
-		(sinf(deg2rad(rot)) * vec[0]) + (cosf(deg2rad(rot)) * vec[1]),
-		vec[2],
+		(cosf(deg2rad(rot)) * vec->x) - (sinf(deg2rad(rot)) * vec->y),
+		(sinf(deg2rad(rot)) * vec->x) + (cosf(deg2rad(rot)) * vec->y),
+		vec->z,
 	};
-	vec[0] = newVec[0];
-	vec[1] = newVec[1];
-	vec[2] = newVec[2];
-	return vec;
+	vec->x = newVec.x;
+	vec->y = newVec.y;
+	vec->z = newVec.z;
 }
 
 void loadTextures()
@@ -192,11 +195,11 @@ void loadTextures()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
 }
 
-void normal(float v1[3], float v2[3], float v3[3])
+void normal(Vector v1, Vector v2, Vector v3)
 {
-	float x1 = v1[0], x2 = v2[0], x3 = v3[0];
-	float y1 = v1[1], y2 = v2[1], y3 = v3[1];
-	float z1 = v1[2], z2 = v2[2], z3 = v3[2];
+	float x1 = v1.x, x2 = v2.x, x3 = v3.x;
+	float y1 = v1.y, y2 = v2.y, y3 = v3.y;
+	float z1 = v1.z, z2 = v2.z, z3 = v3.z;
 	float nx, ny, nz;
 	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
 	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
@@ -410,20 +413,20 @@ void drawMuseum()
 			glBegin(GL_QUADS);
 				for (int i = 0; i <= cylinderSides; i++)
 				{
-					float v1[3] = {10, 0, 0};
-					float v2[3] = {10, 100, 0};
-					float v3[3] = {10, 100, 0};
-					float v4[3] = {10, 0, 0};
-					float* v1ry = rotateVectorY(v1, (360.0 / cylinderSides) * i);
-					float* v2ry = rotateVectorY(v2, (360.0 / cylinderSides) * i);
-					float* v3ry = rotateVectorY(v3, (360.0 / cylinderSides) * (i + 1));
-					float* v4ry = rotateVectorY(v4, (360.0 / cylinderSides) * (i + 1));
+					Vector v1 = {10, 0, 0};
+					Vector v2 = {10, 100, 0};
+					Vector v3 = {10, 100, 0};
+					Vector v4 = {10, 0, 0};
+					rotateVectorY(&v1, (360.0 / cylinderSides) * i);
+					rotateVectorY(&v2, (360.0 / cylinderSides) * i);
+					rotateVectorY(&v3, (360.0 / cylinderSides) * (i + 1));
+					rotateVectorY(&v4, (360.0 / cylinderSides) * (i + 1));
 
 					normal(v1, v2, v3);
-					glTexCoord2f((xScale / cylinderSides) * i, 0); glVertex3f(v1[0], v1[1], v1[2]);
-					glTexCoord2f((xScale / cylinderSides) * i, 1); glVertex3f(v2[0], v2[1], v2[2]);
-					glTexCoord2f((xScale / cylinderSides) * (i + 1), 1); glVertex3f(v3[0], v3[1], v3[2]);
-					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); glVertex3f(v4[0], v4[1], v4[2]);
+					glTexCoord2f((xScale / cylinderSides) * i, 0); glVertex3f(v1.x, v1.y, v1.z);
+					glTexCoord2f((xScale / cylinderSides) * i, 1); glVertex3f(v2.x, v2.y, v2.z);
+					glTexCoord2f((xScale / cylinderSides) * (i + 1), 1); glVertex3f(v3.x, v3.y, v3.z);
+					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); glVertex3f(v4.x, v4.y, v4.z);
 				}
 			glEnd();
 		glPopMatrix();
@@ -506,20 +509,20 @@ void drawMobiusStrip()
 			glBegin(GL_TRIANGLES);
 			for (int i = 0; i < 37; i++)
 			{
-				float* v1 = mobiusStripVertices[2 * i];
-				float* v2 = mobiusStripVertices[(2 * i + 1) % 74];
-				float* v3 = mobiusStripVertices[(2 * i + 2) % 74];
-				float* v4 = mobiusStripVertices[(2 * i + 3) % 74];
+				Vector v1 = mobiusStripVertices[2 * i];
+				Vector v2 = mobiusStripVertices[(2 * i + 1) % 74];
+				Vector v3 = mobiusStripVertices[(2 * i + 2) % 74];
+				Vector v4 = mobiusStripVertices[(2 * i + 3) % 74];
 
 				normal(v1, v2, v3);
-				glVertex3f(v1[0], v1[1], v1[2]);
-				glVertex3f(v2[0], v2[1], v2[2]);
-				glVertex3f(v3[0], v3[1], v3[2]);
+				glVertex3f(v1.x, v1.y, v1.z);
+				glVertex3f(v2.x, v2.y, v2.z);
+				glVertex3f(v3.x, v3.y, v3.z);
 
 				normal(v4, v3, v2);
-				glVertex3f(v4[0], v4[1], v4[2]);
-				glVertex3f(v3[0], v3[1], v3[2]);
-				glVertex3f(v2[0], v2[1], v2[2]);
+				glVertex3f(v4.x, v4.y, v4.z);
+				glVertex3f(v3.x, v3.y, v3.z);
+				glVertex3f(v2.x, v2.y, v2.z);
 			}
 			glEnd();
 			
@@ -720,35 +723,22 @@ void initialiseMobiusStrip()
 {
 	for (int i = 0; i < 37; i++)
 	{
-		mobiusStripVertices[2 * i][0] = 0;
-		mobiusStripVertices[2 * i][1] = 5;
-		mobiusStripVertices[2 * i][2] = 0;
+		mobiusStripVertices[2 * i].x = 0;
+		mobiusStripVertices[2 * i].y = 5;
+		mobiusStripVertices[2 * i].z = 0;
 		
-		mobiusStripVertices[2 * i + 1][0] = 0;
-		mobiusStripVertices[2 * i + 1][1] = -5;
-		mobiusStripVertices[2 * i + 1][2] = 0;
+		mobiusStripVertices[2 * i + 1].x = 0;
+		mobiusStripVertices[2 * i + 1].y = -5;
+		mobiusStripVertices[2 * i + 1].z = 0;
 
-		float* v1rx = rotateVectorX(mobiusStripVertices[2 * i], 5 * i);
-		float* v2rx = rotateVectorX(mobiusStripVertices[2 * i + 1], 5 * i);
+		rotateVectorX(&mobiusStripVertices[2 * i], 5 * i);
+		rotateVectorX(&mobiusStripVertices[2 * i + 1], 5 * i);
 
-		mobiusStripVertices[2 * i][0] = v1rx[0];
-		mobiusStripVertices[2 * i][1] = v1rx[1];
-		mobiusStripVertices[2 * i][2] = v1rx[2] + MOBIUS_STRUP_RADIUS;
-		
-		mobiusStripVertices[2 * i + 1][0] = v2rx[0];
-		mobiusStripVertices[2 * i + 1][1] = v2rx[1];
-		mobiusStripVertices[2 * i + 1][2] = v2rx[2] + MOBIUS_STRUP_RADIUS;
+		mobiusStripVertices[2 * i].z += MOBIUS_STRUP_RADIUS;
+		mobiusStripVertices[2 * i + 1].z += MOBIUS_STRUP_RADIUS;
 
-		float* v1ry = rotateVectorY(mobiusStripVertices[2 * i], 10 * i);
-		float* v2ry = rotateVectorY(mobiusStripVertices[2 * i + 1], 10 * i);
-
-		mobiusStripVertices[2 * i][0] = v1ry[0];
-		mobiusStripVertices[2 * i][1] = v1ry[1];
-		mobiusStripVertices[2 * i][2] = v1ry[2];
-		
-		mobiusStripVertices[2 * i + 1][0] = v2ry[0];
-		mobiusStripVertices[2 * i + 1][1] = v2ry[1];
-		mobiusStripVertices[2 * i + 1][2] = v2ry[2];
+		rotateVectorY(&mobiusStripVertices[2 * i], 10 * i);
+		rotateVectorY(&mobiusStripVertices[2 * i + 1], 10 * i);
 	}
 }
 
