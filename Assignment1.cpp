@@ -127,7 +127,7 @@ void loadTextures()
 
 	// Skybox Front
 	glBindTexture(GL_TEXTURE_2D, texIds[0]);
-	loadTGA("textures/skybox/negz.tga");
+	loadTGA("textures/skybox/Front.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -135,7 +135,7 @@ void loadTextures()
 
 	// Skybox Back
 	glBindTexture(GL_TEXTURE_2D, texIds[1]);
-	loadTGA("textures/skybox/posz.tga");
+	loadTGA("textures/skybox/Back.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -143,7 +143,7 @@ void loadTextures()
 
 	// Skybox Right
 	glBindTexture(GL_TEXTURE_2D, texIds[2]);
-	loadTGA("textures/skybox/posx.tga");
+	loadTGA("textures/skybox/Right.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -151,7 +151,7 @@ void loadTextures()
 
 	// Skybox Left
 	glBindTexture(GL_TEXTURE_2D, texIds[3]);
-	loadTGA("textures/skybox/negx.tga");
+	loadTGA("textures/skybox/Left.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -159,7 +159,7 @@ void loadTextures()
 
 	// Skybox Bottom
 	glBindTexture(GL_TEXTURE_2D, texIds[4]);
-	loadTGA("textures/skybox/negy.tga");
+	loadTGA("textures/skybox/Bottom.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -167,7 +167,7 @@ void loadTextures()
 
 	// Skybox Top
 	glBindTexture(GL_TEXTURE_2D, texIds[5]);
-	loadTGA("textures/skybox/posy.tga");
+	loadTGA("textures/skybox/Top.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
@@ -213,7 +213,7 @@ void drawSkybox()
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	float skyBoxScale = 2 * (PLANE_X >= PLANE_Z ? PLANE_X : PLANE_Z);
 	glPushMatrix();
-		glTranslatef(0, skyBoxScale - 0.1, 0);
+		// glTranslatef(0, skyBoxScale - 0.1, 0);
 		// FRONT
 		glBindTexture(GL_TEXTURE_2D, texIds[0]);
 		glBegin(GL_QUADS);
