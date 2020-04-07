@@ -62,6 +62,7 @@ int sceneTime = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
 int mobiusStripBallAngle = 0;
 Vector mobiusStripVertices[74];
+Vector mobiusStripNormals[74];
 
 float cradleAngle = CRADLE_MAX_ANGLE;
 
@@ -438,35 +439,6 @@ void drawMuseum()
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glBindTexture(GL_TEXTURE_2D, texIds[8]);
 			glBegin(GL_QUADS);
-				// for (int i = 0; i <= MUSEUM_PILLAR_SIDES; i++)
-				// {
-				// 	Vector v1 = {10, 0, 0};
-				// 	Vector v2 = {10, 100, 0};
-				// 	Vector v3 = {10, 100, 0};
-				// 	Vector v4 = {10, 0, 0};
-				// 	Vector v5 = {10, 100, 0};
-				// 	Vector v6 = {10, 0, 0};
-				// 	rotateVectorY(&v5, (360.0 / MUSEUM_PILLAR_SIDES) * (i - 1));
-				// 	rotateVectorY(&v1, (360.0 / MUSEUM_PILLAR_SIDES) * i);
-				// 	rotateVectorY(&v2, (360.0 / MUSEUM_PILLAR_SIDES) * i);
-				// 	rotateVectorY(&v3, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 1));
-				// 	rotateVectorY(&v4, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 1));
-				// 	rotateVectorY(&v6, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 2));
-
-				// 	Vector n1 = normal(v5, v2, v1);
-				// 	Vector n2 = normal(v1, v2, v3);
-				// 	Vector n3 = normal(v3, v4, v6);
-
-				// 	Vector n1n2 = {n1.x + n2.x, n1.y + n2.y, n1.z + n2.z}; normalise(&n1n2);
-				// 	Vector n2n3 = {n3.x + n2.x, n3.y + n2.y, n3.z + n2.z}; normalise(&n2n3);
-
-				// 	glNormal3f(n1n2.x, n1n2.y, n1n2.z);
-				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * i, 0); glVertex3f(v1.x, v1.y, v1.z);
-				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * i, 1); glVertex3f(v2.x, v2.y, v2.z);
-				// 	glNormal3f(n2n3.x, n2n3.y, n2n3.z);
-				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (i + 1), 1); glVertex3f(v3.x, v3.y, v3.z);
-				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (i + 1), 0); glVertex3f(v4.x, v4.y, v4.z);
-				// }
 				for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
 				{
 					Vector v1 = museumPillarVertices[2 * j];
@@ -576,19 +548,21 @@ void drawMobiusStrip()
 			for (int i = 0; i < 37; i++)
 			{
 				Vector v1 = mobiusStripVertices[2 * i];
+				Vector v1n = mobiusStripNormals[2 * i];
 				Vector v2 = mobiusStripVertices[(2 * i + 1) % 74];
+				Vector v2n = mobiusStripNormals[(2 * i + 1) % 74];
 				Vector v3 = mobiusStripVertices[(2 * i + 2) % 74];
+				Vector v3n = mobiusStripNormals[(2 * i + 2) % 74];
 				Vector v4 = mobiusStripVertices[(2 * i + 3) % 74];
+				Vector v4n = mobiusStripNormals[(2 * i + 3) % 74];
 
-				normal(v1, v2, v3);
-				glVertex3f(v1.x, v1.y, v1.z);
-				glVertex3f(v2.x, v2.y, v2.z);
-				glVertex3f(v3.x, v3.y, v3.z);
+				glNormal3f(v1n.x, v1n.y, v1n.z); glVertex3f(v1.x, v1.y, v1.z);
+				glNormal3f(v2n.x, v2n.y, v2n.z); glVertex3f(v2.x, v2.y, v2.z);
+				glNormal3f(v3n.x, v3n.y, v3n.z); glVertex3f(v3.x, v3.y, v3.z);
 
-				normal(v4, v3, v2);
-				glVertex3f(v4.x, v4.y, v4.z);
-				glVertex3f(v3.x, v3.y, v3.z);
-				glVertex3f(v2.x, v2.y, v2.z);
+				glNormal3f(v4n.x, v4n.y, v4n.z); glVertex3f(v4.x, v4.y, v4.z);
+				glNormal3f(v3n.x, v3n.y, v3n.z); glVertex3f(v3.x, v3.y, v3.z);
+				glNormal3f(v2n.x, v2n.y, v2n.z); glVertex3f(v2.x, v2.y, v2.z);
 			}
 			glEnd();
 			
@@ -780,47 +754,47 @@ void display()
 void initialisePillars()
 {
 	// Calculate vertex positions
-	for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
+	for (int i = 0; i < MUSEUM_PILLAR_SIDES; i++)
 	{
-		museumPillarVertices[2 * j] = { 10, 100, 0 };
-		museumPillarVertices[2 * j + 1] = { 10, 0, 0 };
+		museumPillarVertices[2 * i] = { 10, 100, 0 };
+		museumPillarVertices[2 * i + 1] = { 10, 0, 0 };
 
-		rotateVectorY(&museumPillarVertices[2 * j], (360.0 / MUSEUM_PILLAR_SIDES) * j);
-		rotateVectorY(&museumPillarVertices[2 * j + 1], (360.0 / MUSEUM_PILLAR_SIDES) * j);
+		rotateVectorY(&museumPillarVertices[2 * i], (360.0 / MUSEUM_PILLAR_SIDES) * i);
+		rotateVectorY(&museumPillarVertices[2 * i + 1], (360.0 / MUSEUM_PILLAR_SIDES) * i);
 
 		// cout << museumPillarVertices[j].x << " " << museumPillarVertices[j].y << " " << museumPillarVertices[j].z << endl;
 		// cout << museumPillarVertices[j+1].x << " " << museumPillarVertices[j+1].y << " " << museumPillarVertices[j+1].z << endl;
 	}
 	
 	// Calculate vertex normals
-	for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
+	for (int i = 0; i < MUSEUM_PILLAR_SIDES; i++)
 	{
-		Vector v1 = museumPillarVertices[2 * j];
-		Vector v2 = museumPillarVertices[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)];
-		Vector v3 = museumPillarVertices[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)];
+		Vector v1 = museumPillarVertices[2 * i];
+		Vector v2 = museumPillarVertices[(2 * i + 1) % (MUSEUM_PILLAR_SIDES * 2)];
+		Vector v3 = museumPillarVertices[(2 * i + 3) % (MUSEUM_PILLAR_SIDES * 2)];
 
 		Vector n = normal(v1, v2, v3);
-		museumPillarNormals[2 * j].x += n.x;
-		museumPillarNormals[2 * j].y += n.y;
-		museumPillarNormals[2 * j].z += n.z;
+		museumPillarNormals[2 * i].x += n.x;
+		museumPillarNormals[2 * i].y += n.y;
+		museumPillarNormals[2 * i].z += n.z;
 
-		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
-		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
-		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+		museumPillarNormals[(2 * i + 1) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * i + 1) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * i + 1) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
 
-		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
-		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
-		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+		museumPillarNormals[(2 * i + 2) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * i + 2) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * i + 2) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
 
-		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
-		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
-		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+		museumPillarNormals[(2 * i + 3) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * i + 3) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * i + 3) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
 	}
 
 	// Normalise vertex normals
-	for (int j = 0; j < MUSEUM_PILLAR_SIDES * 2; j++)
+	for (int i = 0; i < MUSEUM_PILLAR_SIDES * 2; i++)
 	{
-		// normalise(&museumPillarNormals[j]);
+		normalise(&museumPillarNormals[i]);
 	}
 }
 
@@ -834,6 +808,7 @@ void initialiseMetatravellers()
 
 void initialiseMobiusStrip()
 {
+	// Calculate vertex positions
 	for (int i = 0; i < 37; i++)
 	{
 		mobiusStripVertices[2 * i].x = 0;
@@ -852,6 +827,47 @@ void initialiseMobiusStrip()
 
 		rotateVectorY(&mobiusStripVertices[2 * i], 10 * i);
 		rotateVectorY(&mobiusStripVertices[2 * i + 1], 10 * i);
+	}
+
+	// Calculate vertex normals
+	for (int i = 0; i < 37; i++)
+	{
+		Vector v1 = mobiusStripVertices[2 * i];
+		Vector v2 = mobiusStripVertices[(2 * i + 1) % 74];
+		Vector v3 = mobiusStripVertices[(2 * i + 2) % 74];
+		Vector v4 = mobiusStripVertices[(2 * i + 3) % 74];
+
+		Vector n1 = normal(v1, v2, v3);
+		mobiusStripNormals[2 * i].x += n1.x;
+		mobiusStripNormals[2 * i].y += n1.y;
+		mobiusStripNormals[2 * i].z += n1.z;
+
+		mobiusStripNormals[(2 * i + 1) % 74].x += n1.x;
+		mobiusStripNormals[(2 * i + 1) % 74].y += n1.y;
+		mobiusStripNormals[(2 * i + 1) % 74].z += n1.z;
+
+		mobiusStripNormals[(2 * i + 2) % 74].x += n1.x;
+		mobiusStripNormals[(2 * i + 2) % 74].y += n1.y;
+		mobiusStripNormals[(2 * i + 2) % 74].z += n1.z;
+		
+		Vector n2 = normal(v4, v3, v2);
+		mobiusStripNormals[(2 * i + 3) % 74].x += n2.x;
+		mobiusStripNormals[(2 * i + 3) % 74].y += n2.y;
+		mobiusStripNormals[(2 * i + 3) % 74].z += n2.z;
+
+		mobiusStripNormals[(2 * i + 2) % 74].x += n2.x;
+		mobiusStripNormals[(2 * i + 2) % 74].y += n2.y;
+		mobiusStripNormals[(2 * i + 2) % 74].z += n2.z;
+
+		mobiusStripNormals[(2 * i + 1) % 74].x += n2.x;
+		mobiusStripNormals[(2 * i + 1) % 74].y += n2.y;
+		mobiusStripNormals[(2 * i + 1) % 74].z += n2.z;
+	}
+
+	// Normalise vertex normals
+	for (int i = 0; i < 74; i++)
+	{
+		normalise(&mobiusStripNormals[i]);
 	}
 }
 
