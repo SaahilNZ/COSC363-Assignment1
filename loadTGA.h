@@ -6,6 +6,8 @@
 // Author:
 // R. Mukundan, Department of Computer Science and Software Engineering
 // University of Canterbury, Christchurch, New Zealand.
+//
+// Modified by Saahil Hari
 //=====================================================================
 
 #if !defined(H_TGA)
@@ -16,9 +18,16 @@
 #include <GL/freeglut.h>
 using namespace std;
 
-void loadTGA(const char* filename)
+typedef struct {
+	int width;
+	int height;
+	char* data;
+	int nbytes;
+} ImageData;
+
+ImageData loadImageData(const char* filename)
 {
-    char id, cmap, imgtype, bpp, c_garb;
+	char id, cmap, imgtype, bpp, c_garb;
     char* imageData, temp;
     short int s_garb, wid, hgt;
     int nbytes, size, indx;
@@ -61,20 +70,26 @@ void loadTGA(const char* filename)
 	        imageData[indx+2] = temp;
         }
     }
+	return { wid, hgt, imageData, nbytes };
+}
 
-	switch (nbytes)
+void loadTGA(const char* filename)
+{
+	ImageData imageData = loadImageData(filename);
+
+	switch (imageData.nbytes)
 	{
 	     case 1:
-	         glTexImage2D(GL_TEXTURE_2D, 0, 1, wid, hgt, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, imageData);
+	         glTexImage2D(GL_TEXTURE_2D, 0, 1, imageData.width, imageData.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, imageData.data);
 	         break;
 	     case 3:
-	         glTexImage2D(GL_TEXTURE_2D, 0, 3, wid, hgt, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+	         glTexImage2D(GL_TEXTURE_2D, 0, 3, imageData.width, imageData.height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData.data);
 	         break;
 	     case 4:
-	         glTexImage2D(GL_TEXTURE_2D, 0, 4, wid, hgt, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+	         glTexImage2D(GL_TEXTURE_2D, 0, 4, imageData.width, imageData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.data);
 	         break;
      }
-     delete imageData;	         	         
+     delete imageData.data;	         	         
 }
 
 #endif
