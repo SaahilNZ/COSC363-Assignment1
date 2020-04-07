@@ -18,6 +18,7 @@
 
 #define MUSEUM_RADIUS 180
 #define MUSEUM_SIDES 6
+#define MUSEUM_PILLAR_SIDES 24
 #define METATRAVELLER_COUNT 72
 #define METATRAVELLER_SPEED 2
 #define METATRAVELLER_SPIRALS 6
@@ -53,6 +54,9 @@ float cam_hgt = 100;
 float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
+
+Vector museumPillarVertices[MUSEUM_PILLAR_SIDES * 2];
+Vector museumPillarNormals[MUSEUM_PILLAR_SIDES * 2];
 
 int sceneTime = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
@@ -119,6 +123,41 @@ void rotateVectorZ(Vector* vec, float rot)
 	vec->x = newVec.x;
 	vec->y = newVec.y;
 	vec->z = newVec.z;
+}
+
+void normalise(Vector* vec)
+{
+	float n = 0;
+	if (vec->x >= vec->y && vec->x >= vec->z)
+	{
+		n = vec->x;
+	}
+	else if (vec->y >= vec->x && vec->y >= vec->z)
+	{
+		n = vec->y;
+	}
+	else
+	{
+		n = vec->z;
+	}
+	if (n == 0) n = 1;
+
+	vec->x = vec->x / n;
+	vec->y = vec->y / n;
+	vec->z = vec->z / n;
+}
+
+Vector normal(Vector v1, Vector v2, Vector v3)
+{
+	float x1 = v1.x, x2 = v2.x, x3 = v3.x;
+	float y1 = v1.y, y2 = v2.y, y3 = v3.y;
+	float z1 = v1.z, z2 = v2.z, z3 = v3.z;
+	float nx, ny, nz;
+	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
+	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
+	nz = x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2);
+	glNormal3f(nx, ny, nz);
+	return { nx, ny, nz };
 }
 
 void loadTextures()
@@ -193,18 +232,6 @@ void loadTextures()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-}
-
-void normal(Vector v1, Vector v2, Vector v3)
-{
-	float x1 = v1.x, x2 = v2.x, x3 = v3.x;
-	float y1 = v1.y, y2 = v2.y, y3 = v3.y;
-	float z1 = v1.z, z2 = v2.z, z3 = v3.z;
-	float nx, ny, nz;
-	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
-	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
-	nz = x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2);
-	glNormal3f(nx, ny, nz);
 }
 
 void drawSkybox()
@@ -400,10 +427,10 @@ void drawMuseum()
 	float pillarDistance = MUSEUM_RADIUS / sin(deg2rad(angle));
 	for (int i = 0; i < MUSEUM_SIDES; i++)
 	{
-		int cylinderSides = 24;
 		float xScale = 1;
 		float yScale = 5;
 
+		// Draw cylinder
 		glPushMatrix();
 			glRotatef((angle * i), 0, 1, 0);
 			glTranslatef(pillarDistance, 0, 0);
@@ -411,22 +438,61 @@ void drawMuseum()
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glBindTexture(GL_TEXTURE_2D, texIds[8]);
 			glBegin(GL_QUADS);
-				for (int i = 0; i <= cylinderSides; i++)
-				{
-					Vector v1 = {10, 0, 0};
-					Vector v2 = {10, 100, 0};
-					Vector v3 = {10, 100, 0};
-					Vector v4 = {10, 0, 0};
-					rotateVectorY(&v1, (360.0 / cylinderSides) * i);
-					rotateVectorY(&v2, (360.0 / cylinderSides) * i);
-					rotateVectorY(&v3, (360.0 / cylinderSides) * (i + 1));
-					rotateVectorY(&v4, (360.0 / cylinderSides) * (i + 1));
+				// for (int i = 0; i <= MUSEUM_PILLAR_SIDES; i++)
+				// {
+				// 	Vector v1 = {10, 0, 0};
+				// 	Vector v2 = {10, 100, 0};
+				// 	Vector v3 = {10, 100, 0};
+				// 	Vector v4 = {10, 0, 0};
+				// 	Vector v5 = {10, 100, 0};
+				// 	Vector v6 = {10, 0, 0};
+				// 	rotateVectorY(&v5, (360.0 / MUSEUM_PILLAR_SIDES) * (i - 1));
+				// 	rotateVectorY(&v1, (360.0 / MUSEUM_PILLAR_SIDES) * i);
+				// 	rotateVectorY(&v2, (360.0 / MUSEUM_PILLAR_SIDES) * i);
+				// 	rotateVectorY(&v3, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 1));
+				// 	rotateVectorY(&v4, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 1));
+				// 	rotateVectorY(&v6, (360.0 / MUSEUM_PILLAR_SIDES) * (i + 2));
 
-					normal(v1, v2, v3);
-					glTexCoord2f((xScale / cylinderSides) * i, 0); glVertex3f(v1.x, v1.y, v1.z);
-					glTexCoord2f((xScale / cylinderSides) * i, 1); glVertex3f(v2.x, v2.y, v2.z);
-					glTexCoord2f((xScale / cylinderSides) * (i + 1), 1); glVertex3f(v3.x, v3.y, v3.z);
-					glTexCoord2f((xScale / cylinderSides) * (i + 1), 0); glVertex3f(v4.x, v4.y, v4.z);
+				// 	Vector n1 = normal(v5, v2, v1);
+				// 	Vector n2 = normal(v1, v2, v3);
+				// 	Vector n3 = normal(v3, v4, v6);
+
+				// 	Vector n1n2 = {n1.x + n2.x, n1.y + n2.y, n1.z + n2.z}; normalise(&n1n2);
+				// 	Vector n2n3 = {n3.x + n2.x, n3.y + n2.y, n3.z + n2.z}; normalise(&n2n3);
+
+				// 	glNormal3f(n1n2.x, n1n2.y, n1n2.z);
+				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * i, 0); glVertex3f(v1.x, v1.y, v1.z);
+				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * i, 1); glVertex3f(v2.x, v2.y, v2.z);
+				// 	glNormal3f(n2n3.x, n2n3.y, n2n3.z);
+				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (i + 1), 1); glVertex3f(v3.x, v3.y, v3.z);
+				// 	glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (i + 1), 0); glVertex3f(v4.x, v4.y, v4.z);
+				// }
+				for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
+				{
+					Vector v1 = museumPillarVertices[2 * j];
+					Vector v1n = museumPillarNormals[2 * j];
+					Vector v2 = museumPillarVertices[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)];
+					Vector v2n = museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)];
+					Vector v3 = museumPillarVertices[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)];
+					Vector v3n = museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)];
+					Vector v4 = museumPillarVertices[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)];
+					Vector v4n = museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)];
+
+					glNormal3f(v1n.x, v1n.y, v1n.z);
+					glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * j, 0);
+					glVertex3f(v1.x, v1.y, v1.z);
+					
+					glNormal3f(v2n.x, v2n.y, v2n.z);
+					glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * j, 1);
+					glVertex3f(v2.x, v2.y, v2.z);
+					
+					glNormal3f(v3n.x, v3n.y, v3n.z);
+					glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (j + 1), 1);
+					glVertex3f(v3.x, v3.y, v3.z);
+					
+					glNormal3f(v4n.x, v4n.y, v4n.z);
+					glTexCoord2f((xScale / MUSEUM_PILLAR_SIDES) * (j + 1), 0);
+					glVertex3f(v4.x, v4.y, v4.z);
 				}
 			glEnd();
 		glPopMatrix();
@@ -711,6 +777,53 @@ void display()
 	glutSwapBuffers();
 }
 
+void initialisePillars()
+{
+	// Calculate vertex positions
+	for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
+	{
+		museumPillarVertices[2 * j] = { 10, 100, 0 };
+		museumPillarVertices[2 * j + 1] = { 10, 0, 0 };
+
+		rotateVectorY(&museumPillarVertices[2 * j], (360.0 / MUSEUM_PILLAR_SIDES) * j);
+		rotateVectorY(&museumPillarVertices[2 * j + 1], (360.0 / MUSEUM_PILLAR_SIDES) * j);
+
+		// cout << museumPillarVertices[j].x << " " << museumPillarVertices[j].y << " " << museumPillarVertices[j].z << endl;
+		// cout << museumPillarVertices[j+1].x << " " << museumPillarVertices[j+1].y << " " << museumPillarVertices[j+1].z << endl;
+	}
+	
+	// Calculate vertex normals
+	for (int j = 0; j < MUSEUM_PILLAR_SIDES; j++)
+	{
+		Vector v1 = museumPillarVertices[2 * j];
+		Vector v2 = museumPillarVertices[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)];
+		Vector v3 = museumPillarVertices[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)];
+
+		Vector n = normal(v1, v2, v3);
+		museumPillarNormals[2 * j].x += n.x;
+		museumPillarNormals[2 * j].y += n.y;
+		museumPillarNormals[2 * j].z += n.z;
+
+		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * j + 1) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+
+		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * j + 2) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+
+		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].x += n.x;
+		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].y += n.y;
+		museumPillarNormals[(2 * j + 3) % (MUSEUM_PILLAR_SIDES * 2)].z += n.z;
+	}
+
+	// Normalise vertex normals
+	for (int j = 0; j < MUSEUM_PILLAR_SIDES * 2; j++)
+	{
+		// normalise(&museumPillarNormals[j]);
+	}
+}
+
 void initialiseMetatravellers()
 {
 	for (int i = 0; i < METATRAVELLER_COUNT; i++)
@@ -747,6 +860,7 @@ void initialize()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	loadTextures();
+	initialisePillars();
 	initialiseMetatravellers();
 	initialiseMobiusStrip();
 
