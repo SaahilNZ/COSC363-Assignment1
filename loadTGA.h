@@ -25,7 +25,7 @@ typedef struct {
 	int nbytes;
 } ImageData;
 
-ImageData loadImageData(const char* filename)
+ImageData loadTGAImageData(const char* filename)
 {
 	char id, cmap, imgtype, bpp, c_garb;
     char* imageData, temp;
@@ -75,7 +75,7 @@ ImageData loadImageData(const char* filename)
 
 void loadTGA(const char* filename)
 {
-	ImageData imageData = loadImageData(filename);
+	ImageData imageData = loadTGAImageData(filename);
 
 	switch (imageData.nbytes)
 	{

@@ -215,17 +215,17 @@ void loadTextures()
 
 	// Brick
 	glBindTexture(GL_TEXTURE_2D, texIds[6]);
-	ImageData brick1024 = loadImageData("textures/brick/brick1024.tga");
-	ImageData brick512 = loadImageData("textures/brick/brick512.tga");
-	ImageData brick256 = loadImageData("textures/brick/brick256.tga");
-	ImageData brick128 = loadImageData("textures/brick/brick128.tga");
-	ImageData brick64 = loadImageData("textures/brick/brick64.tga");
-	ImageData brick32 = loadImageData("textures/brick/brick32.tga");
-	ImageData brick16 = loadImageData("textures/brick/brick16.tga");
-	ImageData brick8 = loadImageData("textures/brick/brick8.tga");
-	ImageData brick4 = loadImageData("textures/brick/brick4.tga");
-	ImageData brick2 = loadImageData("textures/brick/brick2.tga");
-	ImageData brick1 = loadImageData("textures/brick/brick1.tga");
+	ImageData brick1024 = loadTGAImageData("textures/brick/brick1024.tga");
+	ImageData brick512 = loadTGAImageData("textures/brick/brick512.tga");
+	ImageData brick256 = loadTGAImageData("textures/brick/brick256.tga");
+	ImageData brick128 = loadTGAImageData("textures/brick/brick128.tga");
+	ImageData brick64 = loadTGAImageData("textures/brick/brick64.tga");
+	ImageData brick32 = loadTGAImageData("textures/brick/brick32.tga");
+	ImageData brick16 = loadTGAImageData("textures/brick/brick16.tga");
+	ImageData brick8 = loadTGAImageData("textures/brick/brick8.tga");
+	ImageData brick4 = loadTGAImageData("textures/brick/brick4.tga");
+	ImageData brick2 = loadTGAImageData("textures/brick/brick2.tga");
+	ImageData brick1 = loadTGAImageData("textures/brick/brick1.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, brick1024.nbytes, brick1024.width, brick1024.height, 0, GL_RGB, GL_UNSIGNED_BYTE, brick1024.data);
@@ -254,17 +254,17 @@ void loadTextures()
 
 	// Concrete
 	glBindTexture(GL_TEXTURE_2D, texIds[7]);
-	ImageData concrete1024 = loadImageData("textures/concrete/concrete1024.tga");
-	ImageData concrete512 = loadImageData("textures/concrete/concrete512.tga");
-	ImageData concrete256 = loadImageData("textures/concrete/concrete256.tga");
-	ImageData concrete128 = loadImageData("textures/concrete/concrete128.tga");
-	ImageData concrete64 = loadImageData("textures/concrete/concrete64.tga");
-	ImageData concrete32 = loadImageData("textures/concrete/concrete32.tga");
-	ImageData concrete16 = loadImageData("textures/concrete/concrete16.tga");
-	ImageData concrete8 = loadImageData("textures/concrete/concrete8.tga");
-	ImageData concrete4 = loadImageData("textures/concrete/concrete4.tga");
-	ImageData concrete2 = loadImageData("textures/concrete/concrete2.tga");
-	ImageData concrete1 = loadImageData("textures/concrete/concrete1.tga");
+	ImageData concrete1024 = loadTGAImageData("textures/concrete/concrete1024.tga");
+	ImageData concrete512 = loadTGAImageData("textures/concrete/concrete512.tga");
+	ImageData concrete256 = loadTGAImageData("textures/concrete/concrete256.tga");
+	ImageData concrete128 = loadTGAImageData("textures/concrete/concrete128.tga");
+	ImageData concrete64 = loadTGAImageData("textures/concrete/concrete64.tga");
+	ImageData concrete32 = loadTGAImageData("textures/concrete/concrete32.tga");
+	ImageData concrete16 = loadTGAImageData("textures/concrete/concrete16.tga");
+	ImageData concrete8 = loadTGAImageData("textures/concrete/concrete8.tga");
+	ImageData concrete4 = loadTGAImageData("textures/concrete/concrete4.tga");
+	ImageData concrete2 = loadTGAImageData("textures/concrete/concrete2.tga");
+	ImageData concrete1 = loadTGAImageData("textures/concrete/concrete1.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, concrete1024.nbytes, concrete1024.width, concrete1024.height, 0, GL_RGB, GL_UNSIGNED_BYTE, concrete1024.data);
@@ -292,17 +292,17 @@ void loadTextures()
 
 	// Sediment
 	glBindTexture(GL_TEXTURE_2D, texIds[8]);
-	ImageData sediment1024 = loadImageData("textures/sediment/sediment1024.tga");
-	ImageData sediment512 = loadImageData("textures/sediment/sediment512.tga");
-	ImageData sediment256 = loadImageData("textures/sediment/sediment256.tga");
-	ImageData sediment128 = loadImageData("textures/sediment/sediment128.tga");
-	ImageData sediment64 = loadImageData("textures/sediment/sediment64.tga");
-	ImageData sediment32 = loadImageData("textures/sediment/sediment32.tga");
-	ImageData sediment16 = loadImageData("textures/sediment/sediment16.tga");
-	ImageData sediment8 = loadImageData("textures/sediment/sediment8.tga");
-	ImageData sediment4 = loadImageData("textures/sediment/sediment4.tga");
-	ImageData sediment2 = loadImageData("textures/sediment/sediment2.tga");
-	ImageData sediment1 = loadImageData("textures/sediment/sediment1.tga");
+	ImageData sediment1024 = loadTGAImageData("textures/sediment/sediment1024.tga");
+	ImageData sediment512 = loadTGAImageData("textures/sediment/sediment512.tga");
+	ImageData sediment256 = loadTGAImageData("textures/sediment/sediment256.tga");
+	ImageData sediment128 = loadTGAImageData("textures/sediment/sediment128.tga");
+	ImageData sediment64 = loadTGAImageData("textures/sediment/sediment64.tga");
+	ImageData sediment32 = loadTGAImageData("textures/sediment/sediment32.tga");
+	ImageData sediment16 = loadTGAImageData("textures/sediment/sediment16.tga");
+	ImageData sediment8 = loadTGAImageData("textures/sediment/sediment8.tga");
+	ImageData sediment4 = loadTGAImageData("textures/sediment/sediment4.tga");
+	ImageData sediment2 = loadTGAImageData("textures/sediment/sediment2.tga");
+	ImageData sediment1 = loadTGAImageData("textures/sediment/sediment1.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, sediment1024.nbytes, sediment1024.width, sediment1024.height, 0, GL_RGB, GL_UNSIGNED_BYTE, sediment1024.data);
