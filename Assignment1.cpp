@@ -66,6 +66,8 @@ Vector mobiusStripNormals[74];
 
 float cradleAngle = CRADLE_MAX_ANGLE;
 
+float shadowColor[4] = {0.2, 0.2, 0.2, 1};
+
 GLuint texIds[9];
 
 void calcMetatravellerAngles()
@@ -434,20 +436,35 @@ void drawFloor()
 	{
 		for(int z = -PLANE_Z; z <= PLANE_Z; z += PLANE_TILE_SIZE)
 		{
-			glTexCoord2f((x + 0) / FLOOR_SCALE, (z + 0) / FLOOR_SCALE); glVertex3f(x, 0, z);
-			glTexCoord2f((x + 1) / FLOOR_SCALE, (z + 0) / FLOOR_SCALE); glVertex3f(x, 0, z + PLANE_TILE_SIZE);
-			glTexCoord2f((x + 1) / FLOOR_SCALE, (z + 1) / FLOOR_SCALE); glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
-			glTexCoord2f((x + 0) / FLOOR_SCALE, (z + 1) / FLOOR_SCALE); glVertex3f(x + PLANE_TILE_SIZE, 0, z);
+			glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
+			glVertex3f(x, 0, z);
+			
+			glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
+			glVertex3f(x, 0, z + PLANE_TILE_SIZE);
+			
+			glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
+			glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
+			
+			glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
+			glVertex3f(x + PLANE_TILE_SIZE, 0, z);
 		}
 	}
 	glEnd();
 	glEnable(GL_LIGHTING);
 }
 
-void drawMuseum()
+void drawMuseum(bool isShadow)
 {
-	glEnable(GL_TEXTURE_2D);
-	glColor3f(1, 1, 1);
+	if (isShadow)
+	{
+		glDisable(GL_TEXTURE_2D);
+		glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+	}
+	else 
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor3f(1, 1, 1);
+	}
 	float angle = 360.0 / MUSEUM_SIDES;
 	float wallLength = tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2;
 	for (int i = 1; i < MUSEUM_SIDES; i++)
@@ -567,7 +584,8 @@ void drawMuseum()
 
 	// roof
 	// TODO: change glutSolidCone to gluCylinder (for texcoords)
-	glColor3f(0.3, 0.3, 0.3);
+	if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+		else glColor3f(0.3, 0.3, 0.3);
 	glPushMatrix();
 		glTranslatef(0, 100, 0);
 		glRotatef(-90, 1, 0, 0);
@@ -576,23 +594,29 @@ void drawMuseum()
 
 	// floor
 	// TODO: generate floor using points and texcoords
-	glColor3f(0.5, 0, 0.8);
-	glPushMatrix();
-		glTranslatef(0, -0.98, 0);
-		glRotatef(-90, 1, 0, 0);
-		glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
-	glPopMatrix();
+	if (!isShadow)
+	{
+		glColor3f(0.5, 0, 0.8);
+		glPushMatrix();
+			glTranslatef(0, -0.98, 0);
+			glRotatef(-90, 1, 0, 0);
+			glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
+		glPopMatrix();
+	}
 }
 
-void drawMetatravellers()
+void drawMetatravellers(bool isShadow)
 {
 	glPushMatrix();
 		glTranslatef(0, 0, 120);
-		glPushMatrix();
-			glColor3f(0.2, 0.2, 0.2);
-			glScalef(50, 10, 60);
-			glutSolidCube(1);
-		glPopMatrix();
+		if (!isShadow)
+		{
+			glPushMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glScalef(120, 10, 80);
+				glutSolidCube(1);
+			glPopMatrix();
+		}
 
 		glPushMatrix();
 			glTranslatef(0, 30, 0);
@@ -600,7 +624,8 @@ void drawMetatravellers()
 			{
 				// TODO: Implement toggle button
 
-				// glColor3f(1, 0.9, 0.3);
+				// if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+				// 	else glColor3f(1, 0.9, 0.3);
 				// glPushMatrix();
 				// 	glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
 				// 	glTranslatef(0, 0, 20);
@@ -608,7 +633,8 @@ void drawMetatravellers()
 				// 	glutSolidTorus(0.05, 5, 4, 36);
 				// glPopMatrix();
 				
-				glColor3f(0.8, 0, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0, 0.8);
 				glPushMatrix();
 					glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
 					glTranslatef(0, 0, 20);
@@ -621,21 +647,25 @@ void drawMetatravellers()
 	glPopMatrix();
 }
 
-void drawMobiusStrip()
+void drawMobiusStrip(bool isShadow)
 {
 	glPushMatrix();
 		glTranslatef(120, 0, 0);
 		glRotatef(90, 0, 1, 0);
 		// Base
-		glPushMatrix();
-			glColor3f(0.2, 0.2, 0.2);
-			glScalef(50, 10, 60);
-			glutSolidCube(1);
-		glPopMatrix();
+		if (!isShadow)
+		{
+			glPushMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glScalef(120, 10, 80);
+				glutSolidCube(1);
+			glPopMatrix();
+		}
 
 		glPushMatrix();
 			// Mobius Strip
-			glColor3f(0.6, 0.0, 1.0);
+			if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+				else glColor3f(0, 0.0, 0.8);
 			glTranslatef(0, 20, 0);
 			glBegin(GL_TRIANGLES);
 			for (int i = 0; i < 37; i++)
@@ -664,7 +694,8 @@ void drawMobiusStrip()
 			for (int i = 0; i < MOBIUS_STRIP_BALLS; i++)
 			{
 				glPushMatrix();
-					glColor3f(0.6, 0.6, 0.6);
+					if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+						else glColor3f(0.6, 0.6, 0.6);
 					glRotatef((mobiusStripBallAngle + i * angleOffset), 0, 1, 0);
 					glTranslatef(0, 0, -MOBIUS_STRUP_RADIUS);
 					glRotatef((-(mobiusStripBallAngle + i * angleOffset) / 2.0), 1, 0, 0);
@@ -682,24 +713,28 @@ void drawMobiusStrip()
 // Use a min call and a max call on the simple gravity pendulum differential equation
 // min should be used on one end of the Newton's Cradle, while max should be used on the other
 
-void drawNewtonsCradle()
+void drawNewtonsCradle(bool isShadow)
 {
 	glPushMatrix();
 		glTranslatef(-120, 0, 0);
 		glRotatef(-90, 0, 1, 0);
 		// Base
-		glPushMatrix();
-			glColor3f(0.2, 0.2, 0.2);
-			glScalef(50, 10, 60);
-			glutSolidCube(1);
-		glPopMatrix();
+		if (!isShadow)
+		{
+			glPushMatrix();
+				glColor3f(0.8, 0.8, 0.8);
+				glScalef(120, 10, 80);
+				glutSolidCube(1);
+			glPopMatrix();
+		}
 
 		// Pendulums
 		glPushMatrix();
 			glTranslatef(0, 10, 0);
 
 			glPushMatrix();
-				glColor3f(0.5, 0.5, 0.5);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.5, 0.5, 0.5);
 				glTranslatef(-12, CRADLE_LENGTH, 0);
 				glRotatef(min(0, cradleAngle), 0, 0, 1);
 				glTranslatef(-0, -CRADLE_LENGTH, 0);
@@ -711,12 +746,14 @@ void drawNewtonsCradle()
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				glColor3f(0.8, 0.8, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0.8, 0.8);
 				glutSolidSphere(3, 12, 12);
 			glPopMatrix();
 
 			glPushMatrix();
-				glColor3f(0.5, 0.5, 0.5);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.5, 0.5, 0.5);
 				glTranslatef(-6, 0, 0);
 				glPushMatrix();
 					glRotatef(-70, 1, 0, 0);
@@ -726,12 +763,14 @@ void drawNewtonsCradle()
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				glColor3f(0.8, 0.8, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0.8, 0.8);
 				glutSolidSphere(3, 12, 12);
 			glPopMatrix();
 
 			glPushMatrix();
-				glColor3f(0.5, 0.5, 0.5);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.5, 0.5, 0.5);
 				glPushMatrix();
 					glRotatef(-70, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
@@ -740,12 +779,14 @@ void drawNewtonsCradle()
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				glColor3f(0.8, 0.8, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0.8, 0.8);
 				glutSolidSphere(3, 12, 12);
 			glPopMatrix();
 
 			glPushMatrix();
-				glColor3f(0.5, 0.5, 0.5);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.5, 0.5, 0.5);
 				glTranslatef(6, 0, 0);
 				glPushMatrix();
 					glRotatef(-70, 1, 0, 0);
@@ -755,12 +796,14 @@ void drawNewtonsCradle()
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				glColor3f(0.8, 0.8, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0.8, 0.8);
 				glutSolidSphere(3, 12, 12);
 			glPopMatrix();
 
 			glPushMatrix();
-				glColor3f(0.5, 0.5, 0.5);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.5, 0.5, 0.5);
 				glTranslatef(12, CRADLE_LENGTH, 0);
 				glRotatef(max(0, cradleAngle), 0, 0, 1);
 				glTranslatef(0, -CRADLE_LENGTH, 0);
@@ -772,14 +815,16 @@ void drawNewtonsCradle()
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				glColor3f(0.8, 0.8, 0.8);
+				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+					else glColor3f(0.8, 0.8, 0.8);
 				glutSolidSphere(3, 12, 12);
 			glPopMatrix();
 		glPopMatrix();
 
 		// Frame
 		glPushMatrix();
-			glColor3f(0.5, 0.5, 0.5);
+			if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+				else glColor3f(0.5, 0.5, 0.5);
 			glPushMatrix();
 				glTranslatef(-21.5, 10 + (CRADLE_LENGTH * cos(deg2rad(20))), (CRADLE_LENGTH * sin(deg2rad(20))));
 				glRotatef(90, 0, 1, 0);
@@ -824,9 +869,6 @@ void initialisePillars()
 
 		rotateVectorY(&museumPillarVertices[2 * i], (360.0 / MUSEUM_PILLAR_SIDES) * i);
 		rotateVectorY(&museumPillarVertices[2 * i + 1], (360.0 / MUSEUM_PILLAR_SIDES) * i);
-
-		// cout << museumPillarVertices[j].x << " " << museumPillarVertices[j].y << " " << museumPillarVertices[j].z << endl;
-		// cout << museumPillarVertices[j+1].x << " " << museumPillarVertices[j+1].y << " " << museumPillarVertices[j+1].z << endl;
 	}
 	
 	// Calculate vertex normals
@@ -936,11 +978,11 @@ void initialiseMobiusStrip()
 
 void display()
 {
-	float outerLightPos[4] = {0., 1000., 0., 10};  //light's position
 	float innerLightPos[4] = {0., 90., 0., 1.0};  //light's position
 	float lightDir[4] = {0, -1, -1, 0};
 
 	float white[4] = {1, 1, 1, 1};
+	float grey[4] {0.5, 0.5, 0.5, 1};
 	float black[4] = {0, 0, 0, 1};
 
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
@@ -955,31 +997,85 @@ void display()
 	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, LOOK_HEIGHT, cam_z + look_z, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightDir);
 
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, white);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, white);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, grey);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, grey);
 	glLightfv(GL_LIGHT1, GL_POSITION, innerLightPos);
 
 	drawSkybox();
 
 	drawFloor();
 
-	float sunPos[3] = {0, 500, -500};
+	// Shadows
+	float lightPos[3] = {120, 90, 0};
 	float shadowMatrix[16] = {
-		sunPos[1], 0, 0, 0,
-		-sunPos[0], 0, -sunPos[2], -1,
-		0, 0, sunPos[1], 0,
-		0, 0, 0, sunPos[1]
+		lightPos[1], 0, 0, 0,
+		-lightPos[0], 0, -lightPos[2], -1,
+		0, 0, lightPos[1], 0,
+		0, 0, 0, lightPos[1]
 	};
+
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+		glTranslatef(0, 5.1, 0);
+		glMultMatrixf(shadowMatrix);
+		drawMobiusStrip(true);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTranslatef(0, 0.01, 0);
+		lightPos[0] = 0;
+		lightPos[1] = 500;
+		lightPos[2] = -500;
+		shadowMatrix[0] = lightPos[1];
+		shadowMatrix[4] = -lightPos[0];
+		shadowMatrix[6] = -lightPos[2];
+		shadowMatrix[10] = lightPos[1];
+		shadowMatrix[15] = lightPos[1];
+
+		glMultMatrixf(shadowMatrix);
+		drawMuseum(true);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTranslatef(0, 5.1, 0);
+		lightPos[0] = -120;
+		lightPos[1] = 90;
+		lightPos[2] = 0;
+		shadowMatrix[0] = lightPos[1];
+		shadowMatrix[4] = -lightPos[0];
+		shadowMatrix[6] = -lightPos[2];
+		shadowMatrix[10] = lightPos[1];
+		shadowMatrix[15] = lightPos[1];
+
+		glMultMatrixf(shadowMatrix);
+		drawNewtonsCradle(true);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTranslatef(0, 5.1, 0);
+		lightPos[0] = 0;
+		lightPos[1] = 90;
+		lightPos[2] = 120;
+		shadowMatrix[0] = lightPos[1];
+		shadowMatrix[4] = -lightPos[0];
+		shadowMatrix[6] = -lightPos[2];
+		shadowMatrix[10] = lightPos[1];
+		shadowMatrix[15] = lightPos[1];
+
+		glMultMatrixf(shadowMatrix);
+		drawMetatravellers(true);
+	glPopMatrix();
+	glEnable(GL_LIGHTING);
 
 	// Draw
 	glPushMatrix();
 		glEnable(GL_LIGHT0);
-		drawMuseum();
+		drawMuseum(false);
 		glDisable(GL_LIGHT0);
 
-		drawMetatravellers();
-		drawMobiusStrip();
-		drawNewtonsCradle();
+		drawMetatravellers(false);
+		drawMobiusStrip(false);
+		drawNewtonsCradle(false);
 	glPopMatrix();
 
 	glutSwapBuffers();
