@@ -250,7 +250,6 @@ void loadTextures()
 	delete brick4.data;
 	delete brick2.data;
 	delete brick1.data;
-	
 
 	// Concrete
 	glBindTexture(GL_TEXTURE_2D, texIds[7]);
@@ -447,10 +446,10 @@ void drawFloor()
 
 void drawMuseum()
 {
+	glEnable(GL_TEXTURE_2D);
 	glColor3f(1, 1, 1);
 	float angle = 360.0 / MUSEUM_SIDES;
 	float wallLength = tan(deg2rad(angle / 2)) * MUSEUM_RADIUS * 2;
-	// glDisable(GL_LIGHTING);
 	for (int i = 1; i < MUSEUM_SIDES; i++)
 	{
 		glPushMatrix();
@@ -579,7 +578,7 @@ void drawMuseum()
 	// TODO: generate floor using points and texcoords
 	glColor3f(0.5, 0, 0.8);
 	glPushMatrix();
-		glTranslatef(0, -0.99, 0);
+		glTranslatef(0, -0.98, 0);
 		glRotatef(-90, 1, 0, 0);
 		glutSolidCylinder(pillarDistance, 1, MUSEUM_SIDES, MUSEUM_SIDES);
 	glPopMatrix();
@@ -815,36 +814,6 @@ void drawNewtonsCradle()
 	glPopMatrix();
 }
 
-void display()
-{
-	float outerLightPos[4] = {0., 1000., 0., 10.0};  //light's position
-	float innerLightPos[4] = {0., 90., 0., 1.0};  //light's position
-
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	float look_x = cos(deg2rad(angle)) * 200;
-	float look_z = sin(deg2rad(angle)) * 200;
-
-	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, LOOK_HEIGHT, cam_z + look_z, 0, 1, 0);
-	// glLightfv(GL_LIGHT0, GL_POSITION, innerLightPos);   //set light position
-	glLightfv(GL_LIGHT1, GL_POSITION, outerLightPos);   //set light position
-
-	drawSkybox();
-
-	drawFloor();
-	drawMuseum();
-	drawMetatravellers();
-	drawMobiusStrip();
-	drawNewtonsCradle();
-
-    // glFlush();
-	glutSwapBuffers();
-}
-
 void initialisePillars()
 {
 	// Calculate vertex positions
@@ -963,6 +932,57 @@ void initialiseMobiusStrip()
 	{
 		normalise(&mobiusStripNormals[i]);
 	}
+}
+
+void display()
+{
+	float outerLightPos[4] = {0., 1000., 0., 10};  //light's position
+	float innerLightPos[4] = {0., 90., 0., 1.0};  //light's position
+	float lightDir[4] = {0, -1, -1, 0};
+
+	float white[4] = {1, 1, 1, 1};
+	float black[4] = {0, 0, 0, 1};
+
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	float look_x = cos(deg2rad(angle)) * 200;
+	float look_z = sin(deg2rad(angle)) * 200;
+
+	gluLookAt(cam_x, cam_y, cam_z, cam_x + look_x, LOOK_HEIGHT, cam_z + look_z, 0, 1, 0);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightDir);
+
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, white);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, white);
+	glLightfv(GL_LIGHT1, GL_POSITION, innerLightPos);
+
+	drawSkybox();
+
+	drawFloor();
+
+	float sunPos[3] = {0, 500, -500};
+	float shadowMatrix[16] = {
+		sunPos[1], 0, 0, 0,
+		-sunPos[0], 0, -sunPos[2], -1,
+		0, 0, sunPos[1], 0,
+		0, 0, 0, sunPos[1]
+	};
+
+	// Draw
+	glPushMatrix();
+		glEnable(GL_LIGHT0);
+		drawMuseum();
+		glDisable(GL_LIGHT0);
+
+		drawMetatravellers();
+		drawMobiusStrip();
+		drawNewtonsCradle();
+	glPopMatrix();
+
+	glutSwapBuffers();
 }
 
 void initialize()
