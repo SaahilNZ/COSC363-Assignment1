@@ -12,8 +12,8 @@
 #define FLOOR_SCALE 8.0
 #define PLANE_BOUNDARY 10
 #define PLANE_TILE_SIZE 10
-#define MOVE_SPEED 3
-#define TURN_SPEED 3
+#define MOVE_SPEED 1
+#define TURN_SPEED 1
 #define LOOK_HEIGHT 10
 
 #define MUSEUM_RADIUS 180
@@ -54,12 +54,15 @@ float cam_hgt = 100;
 float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
+int moveDir = 0;
+int turnDir = 0;
 
 Vector museumPillarVertices[MUSEUM_PILLAR_SIDES * 2];
 Vector museumPillarNormals[MUSEUM_PILLAR_SIDES * 2];
 
 int sceneTime = 90;
 int metatravellerAngles[METATRAVELLER_COUNT];
+bool metatravellerRingsEnabled = false;
 int mobiusStripBallAngle = 0;
 Vector mobiusStripVertices[74];
 Vector mobiusStripNormals[74];
@@ -78,9 +81,20 @@ void calcMetatravellerAngles()
 	}
 }
 
+void calculateCamPos()
+{
+	angle = (angle + (360 + (TURN_SPEED * turnDir))) % 360;
+	cam_x += (cos(deg2rad(angle)) * MOVE_SPEED) * moveDir;
+	cam_z += (sin(deg2rad(angle)) * MOVE_SPEED) * moveDir;
+
+	cam_x = clamp(cam_x, -PLANE_X + PLANE_BOUNDARY, PLANE_X - PLANE_BOUNDARY);
+	cam_z = clamp(cam_z, -PLANE_Z + PLANE_BOUNDARY, PLANE_Z - PLANE_BOUNDARY);
+}
+
 void timer(int value)
 {
 	calcMetatravellerAngles();
+	calculateCamPos();
 	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
 	cradleAngle = (-(BALL_MASS * GRAVITY) * (CRADLE_MAX_ANGLE * sin(deg2rad(sceneTime * 2)))) / CRADLE_LENGTH;
 	sceneTime = (sceneTime + 1) % 360;
@@ -596,7 +610,8 @@ void drawMuseum(bool isShadow)
 	// TODO: generate floor using points and texcoords
 	if (!isShadow)
 	{
-		glColor3f(0.5, 0, 0.8);
+		// glColor3f(0.5, 0, 0.8);
+		glColor3f(0.5, 0, 0);
 		glPushMatrix();
 			glTranslatef(0, -0.98, 0);
 			glRotatef(-90, 1, 0, 0);
@@ -616,22 +631,39 @@ void drawMetatravellers(bool isShadow)
 				glScalef(120, 10, 80);
 				glutSolidCube(1);
 			glPopMatrix();
+
+			glPushMatrix();
+				glDisable(GL_LIGHTING);
+				float textScale = 0.05;
+				float textWidth = 0;
+				unsigned char message[] = "Press 'E' to toggle rings";
+				for (int i = 0; i < sizeof(message) / sizeof(message[0]); i++)
+				{
+					textWidth += (glutStrokeWidth(GLUT_STROKE_ROMAN, message[i]) * textScale);
+				}
+				glTranslatef(textWidth / 2, 10, -40);
+				glColor3f(1, 1, 1);
+				glScalef(-textScale, textScale, 1);
+				glutStrokeString(GLUT_STROKE_ROMAN, message);
+				glEnable(GL_LIGHTING);
+			glPopMatrix();
 		}
 
 		glPushMatrix();
 			glTranslatef(0, 30, 0);
 			for (int i = 0; i < METATRAVELLER_COUNT; i++)
 			{
-				// TODO: Implement toggle button
-
-				// if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
-				// 	else glColor3f(1, 0.9, 0.3);
-				// glPushMatrix();
-				// 	glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
-				// 	glTranslatef(0, 0, 20);
-				// 	glRotatef(90, 0, 1, 0);
-				// 	glutSolidTorus(0.05, 5, 4, 36);
-				// glPopMatrix();
+				if (metatravellerRingsEnabled)
+				{
+					if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
+						else glColor3f(1, 0.9, 0.3);
+					glPushMatrix();
+						glRotatef(i * (360.0 / METATRAVELLER_COUNT), 0, 1, 0);
+						glTranslatef(0, 0, 20);
+						glRotatef(90, 0, 1, 0);
+						glutSolidTorus(0.1, 5, 4, 36);
+					glPopMatrix();
+				}
 				
 				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
 					else glColor3f(0.8, 0, 0.8);
@@ -1108,24 +1140,43 @@ void special(int key, int x, int y)
 	switch (key)
 	{
 		case GLUT_KEY_LEFT:
-			angle = (angle + (360 - TURN_SPEED)) % 360;
+			turnDir = -1;
 			break;
 		case GLUT_KEY_RIGHT:
-			angle = (angle + TURN_SPEED) % 360;
+			turnDir = 1;
 			break;
 		case GLUT_KEY_UP:
-			cam_x += cos(deg2rad(angle)) * MOVE_SPEED;
-			cam_z += sin(deg2rad(angle)) * MOVE_SPEED;
+			moveDir = 1;
 			break;
 		case GLUT_KEY_DOWN:
-			cam_x -= cos(deg2rad(angle)) * MOVE_SPEED;
-			cam_z -= sin(deg2rad(angle)) * MOVE_SPEED;
+			moveDir = -1;
 			break;
 	}
-    
-	cam_x = clamp(cam_x, -PLANE_X + PLANE_BOUNDARY, PLANE_X - PLANE_BOUNDARY);
-	cam_z = clamp(cam_z, -PLANE_Z + PLANE_BOUNDARY, PLANE_Z - PLANE_BOUNDARY);
+}
 
+void specialUp(int key, int x, int y)
+{
+	switch (key)
+	{
+		case GLUT_KEY_LEFT:
+		case GLUT_KEY_RIGHT:
+			turnDir = 0;
+			break;
+		case GLUT_KEY_UP:
+		case GLUT_KEY_DOWN:
+			moveDir = 0;
+			break;
+	}
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+		case 'e':
+			metatravellerRingsEnabled = !metatravellerRingsEnabled;
+			break;
+	}
 	glutPostRedisplay();
 }
 
@@ -1140,7 +1191,9 @@ int main(int argc, char** argv)
    initialize();
 
    glutDisplayFunc(display);
-   glutSpecialFunc(special); 
+   glutSpecialFunc(special);
+   glutSpecialUpFunc(specialUp);
+   glutKeyboardFunc(keyboard);
    glutTimerFunc(10, timer, 0);
    glutMainLoop();
    return 0;
