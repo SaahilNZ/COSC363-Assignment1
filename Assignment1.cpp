@@ -492,6 +492,7 @@ void drawMuseum(bool isShadow)
 			int numColumns = (int)ceil(wallLength / 20.0);
 
 			glPushMatrix();
+				glDisable(GL_LIGHT0);
 				glTranslatef(-5, -50, -100);
 				glBegin(GL_QUADS);
 					glNormal3f(-1, 0, 0);
@@ -517,6 +518,7 @@ void drawMuseum(bool isShadow)
 						}
 					}
 				glEnd();
+				glEnable(GL_LIGHT0);
 			glPopMatrix();
 
 			glPushMatrix();
