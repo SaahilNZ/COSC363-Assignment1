@@ -27,7 +27,6 @@
 #define MOBIUS_STRIP_BALLS 3
 #define CRADLE_MAX_ANGLE 45
 #define CRADLE_LENGTH 40
-#define BALL_MASS 4
 #define GRAVITY 9.80665
 
 #define deg2rad(deg) (deg * 4.0 * atan(1)) / 180
@@ -98,7 +97,7 @@ void timer(int value)
 	calcMetatravellerAngles();
 	calculateCamPos();
 	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
-	cradleAngle = (-(BALL_MASS * GRAVITY) * (CRADLE_MAX_ANGLE * sin(deg2rad(sceneTime * 2)))) / CRADLE_LENGTH;
+	cradleAngle = (-GRAVITY * ((CRADLE_MAX_ANGLE * 4) * sin(deg2rad(sceneTime * 2)))) / CRADLE_LENGTH;
 	sceneTime = (sceneTime + 1) % 360;
 
 	glutPostRedisplay();
@@ -893,6 +892,25 @@ void drawNewtonsCradle(bool isShadow)
 	glPopMatrix();
 }
 
+void drawCeilingLight()
+{
+	glPushMatrix();
+		glTranslatef(0, 92, 0);
+		glPushMatrix();
+			glRotatef(90, -1, 0, 0);
+			glColor3f(0.4, 0.4, 0.4);
+			glutSolidCone(10, 15, 12, 12);
+		glPopMatrix();
+		glPushMatrix();
+			glDisable(GL_LIGHTING);
+			glRotatef(90, -1, 0, 0);
+			glColor3f(1, 1, 0.8);
+			glutSolidSphere(4, 12, 12);
+			glEnable(GL_LIGHTING);
+		glPopMatrix();
+	glPopMatrix();
+}
+
 void initialisePillars()
 {
 	// Calculate vertex positions
@@ -1110,6 +1128,7 @@ void display()
 		drawMetatravellers(false);
 		drawMobiusStrip(false);
 		drawNewtonsCradle(false);
+		drawCeilingLight();
 	glPopMatrix();
 
 	glutSwapBuffers();
@@ -1127,6 +1146,7 @@ void initialize()
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
