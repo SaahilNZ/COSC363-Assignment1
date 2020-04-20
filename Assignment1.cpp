@@ -54,8 +54,10 @@ float cam_hgt = 100;
 float cam_x = 0;
 float cam_y = 50;
 float cam_z = -PLANE_Z / 2;
-int moveDir = 0;
-int turnDir = 0;
+int moveForward = 0;
+int moveBack = 0;
+int turnLeft = 0;
+int turnRight = 0;
 
 Vector museumPillarVertices[MUSEUM_PILLAR_SIDES * 2];
 Vector museumPillarNormals[MUSEUM_PILLAR_SIDES * 2];
@@ -83,9 +85,9 @@ void calcMetatravellerAngles()
 
 void calculateCamPos()
 {
-	angle = (angle + (360 + (TURN_SPEED * turnDir))) % 360;
-	cam_x += (cos(deg2rad(angle)) * MOVE_SPEED) * moveDir;
-	cam_z += (sin(deg2rad(angle)) * MOVE_SPEED) * moveDir;
+	angle = (angle + (360 + (TURN_SPEED * (turnLeft + turnRight)))) % 360;
+	cam_x += (cos(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack);
+	cam_z += (sin(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack);
 
 	cam_x = clamp(cam_x, -PLANE_X + PLANE_BOUNDARY, PLANE_X - PLANE_BOUNDARY);
 	cam_z = clamp(cam_z, -PLANE_Z + PLANE_BOUNDARY, PLANE_Z - PLANE_BOUNDARY);
@@ -1140,16 +1142,16 @@ void special(int key, int x, int y)
 	switch (key)
 	{
 		case GLUT_KEY_LEFT:
-			turnDir = -1;
+			turnLeft = -1;
 			break;
 		case GLUT_KEY_RIGHT:
-			turnDir = 1;
+			turnRight = 1;
 			break;
 		case GLUT_KEY_UP:
-			moveDir = 1;
+			moveForward = 1;
 			break;
 		case GLUT_KEY_DOWN:
-			moveDir = -1;
+			moveBack = -1;
 			break;
 	}
 }
@@ -1159,12 +1161,16 @@ void specialUp(int key, int x, int y)
 	switch (key)
 	{
 		case GLUT_KEY_LEFT:
+			turnLeft = 0;
+			break;
 		case GLUT_KEY_RIGHT:
-			turnDir = 0;
+			turnRight = 0;
 			break;
 		case GLUT_KEY_UP:
+			moveForward = 0;
+			break;
 		case GLUT_KEY_DOWN:
-			moveDir = 0;
+			moveBack = 0;
 			break;
 	}
 }
