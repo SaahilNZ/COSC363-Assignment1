@@ -72,8 +72,6 @@ float cradleAngle = CRADLE_MAX_ANGLE;
 
 float shadowColor[4] = {0.2, 0.2, 0.2, 1};
 
-int maxNumLights = 0;
-
 GLuint texIds[9];
 
 void calcMetatravellerAngles()
@@ -780,9 +778,13 @@ void drawNewtonsCradle(bool isShadow)
 			drawPlatform();
 		}
 
-		// Pendulums
+		// // Pendulums
 		glPushMatrix();
 			glTranslatef(0, 10, 0);
+
+			float white[4] = { 1, 1, 1, 1 };
+			float spotlightPos[4] = { 0, 0, 0, 1.0 }; 
+			float spotDir[3] = { 0, -1, 0 };
 
 			glPushMatrix();
 				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
@@ -798,9 +800,28 @@ void drawNewtonsCradle(bool isShadow)
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
-					else glColor3f(0.8, 0.8, 0.8);
+				if (isShadow)
+				{
+					glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);	
+				}
+				else
+				{
+					glColor3f(1, 1, 0.8);
+					glDisable(GL_LIGHTING);
+				}
 				glutSolidSphere(3, 12, 12);
+				if (!isShadow)
+				{
+					glEnable(GL_LIGHTING);
+					glPushMatrix();
+						glLightfv(GL_LIGHT2, GL_DIFFUSE, white);
+						glLightfv(GL_LIGHT2, GL_SPECULAR, white);
+						glLightfv(GL_LIGHT2, GL_POSITION, spotlightPos);
+						glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir);
+						glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 15);
+						glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 100);
+					glPopMatrix();
+				}
 			glPopMatrix();
 
 			glPushMatrix();
@@ -867,9 +888,28 @@ void drawNewtonsCradle(bool isShadow)
 					glRotatef(-110, 1, 0, 0);
 					glutSolidCylinder(0.5, CRADLE_LENGTH, 12, 12);
 				glPopMatrix();
-				if (isShadow) glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);
-					else glColor3f(0.8, 0.8, 0.8);
+				if (isShadow)
+				{
+					glColor4f(shadowColor[0], shadowColor[1], shadowColor[2], shadowColor[3]);	
+				}
+				else
+				{
+					glColor3f(1, 1, 0.8);
+					glDisable(GL_LIGHTING);
+				}
 				glutSolidSphere(3, 12, 12);
+				if (!isShadow)
+				{
+					glEnable(GL_LIGHTING);
+					glPushMatrix();
+						glLightfv(GL_LIGHT3, GL_DIFFUSE, white);
+						glLightfv(GL_LIGHT3, GL_SPECULAR, white);
+						glLightfv(GL_LIGHT3, GL_POSITION, spotlightPos);
+						glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
+						glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 15);
+						glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 100);
+					glPopMatrix();
+				}
 			glPopMatrix();
 		glPopMatrix();
 
@@ -1107,20 +1147,21 @@ void display()
 		drawMuseum(true);
 	glPopMatrix();
 	
-	glPushMatrix();
-		glTranslatef(0, 5.1, 0);
-		lightPos[0] = -120;
-		lightPos[1] = 90;
-		lightPos[2] = 0;
-		shadowMatrix[0] = lightPos[1];
-		shadowMatrix[4] = -lightPos[0];
-		shadowMatrix[6] = -lightPos[2];
-		shadowMatrix[10] = lightPos[1];
-		shadowMatrix[15] = lightPos[1];
 
-		glMultMatrixf(shadowMatrix);
-		drawNewtonsCradle(true);
-	glPopMatrix();
+	// glPushMatrix();
+	// 	glTranslatef(0, 5.1, 0);
+	// 	lightPos[0] = -120;
+	// 	lightPos[1] = 90;
+	// 	lightPos[2] = 0;
+	// 	shadowMatrix[0] = lightPos[1];
+	// 	shadowMatrix[4] = -lightPos[0];
+	// 	shadowMatrix[6] = -lightPos[2];
+	// 	shadowMatrix[10] = lightPos[1];
+	// 	shadowMatrix[15] = lightPos[1];
+
+	// 	glMultMatrixf(shadowMatrix);
+	// 	drawNewtonsCradle(true);
+	// glPopMatrix();
 	
 	glPushMatrix();
 		glTranslatef(0, 5.1, 0);
@@ -1157,7 +1198,6 @@ void initialize()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-	glGetIntegerv(GL_MAX_LIGHTS, &maxNumLights);
 	loadTextures();
 	initialisePillars();
 	initialiseMetatravellers();
@@ -1167,6 +1207,7 @@ void initialize()
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT3);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
