@@ -72,6 +72,8 @@ float cradleAngle = CRADLE_MAX_ANGLE;
 
 float shadowColor[4] = {0.2, 0.2, 0.2, 1};
 
+int maxNumLights = 0;
+
 GLuint texIds[9];
 
 void calcMetatravellerAngles()
@@ -623,17 +625,40 @@ void drawMuseum(bool isShadow)
 	}
 }
 
+void drawPlatform()
+{
+	glPushMatrix();
+		glColor3f(0.8, 0.8, 0.8);
+
+		glPushMatrix();
+			glTranslatef(-60, 5.05, -40);
+			glBegin(GL_QUADS);
+				for (int x = 0; x < 120; x++)
+				{
+					for (int z = 0; z < 80; z++)
+					{
+						glNormal3f(0, 1, 0);
+						glVertex3f(x, 0, z);
+						glVertex3f(x, 0, z + 1);
+						glVertex3f(x + 1, 0, z + 1);
+						glVertex3f(x + 1, 0, z);
+					}
+				}
+			glEnd();
+		glPopMatrix();
+
+		glScalef(120, 10, 80);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
 void drawMetatravellers(bool isShadow)
 {
 	glPushMatrix();
 		glTranslatef(0, 0, 120);
 		if (!isShadow)
 		{
-			glPushMatrix();
-				glColor3f(0.8, 0.8, 0.8);
-				glScalef(120, 10, 80);
-				glutSolidCube(1);
-			glPopMatrix();
+			drawPlatform();
 
 			glPushMatrix();
 				glDisable(GL_LIGHTING);
@@ -690,11 +715,7 @@ void drawMobiusStrip(bool isShadow)
 		// Base
 		if (!isShadow)
 		{
-			glPushMatrix();
-				glColor3f(0.8, 0.8, 0.8);
-				glScalef(120, 10, 80);
-				glutSolidCube(1);
-			glPopMatrix();
+			drawPlatform();
 		}
 
 		glPushMatrix();
@@ -756,11 +777,7 @@ void drawNewtonsCradle(bool isShadow)
 		// Base
 		if (!isShadow)
 		{
-			glPushMatrix();
-				glColor3f(0.8, 0.8, 0.8);
-				glScalef(120, 10, 80);
-				glutSolidCube(1);
-			glPopMatrix();
+			drawPlatform();
 		}
 
 		// Pendulums
@@ -1139,7 +1156,8 @@ void display()
 void initialize()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
+
+	glGetIntegerv(GL_MAX_LIGHTS, &maxNumLights);
 	loadTextures();
 	initialisePillars();
 	initialiseMetatravellers();
