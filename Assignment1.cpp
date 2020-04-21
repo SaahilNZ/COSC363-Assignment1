@@ -10,7 +10,7 @@
 #define PLANE_X 1000
 #define PLANE_Z 1000
 #define FLOOR_SCALE 8.0
-#define PLANE_BOUNDARY 10
+#define PLANE_BOUNDARY 100
 #define PLANE_TILE_SIZE 10
 #define MOVE_SPEED 1
 #define TURN_SPEED 1
@@ -57,6 +57,7 @@ int moveForward = 0;
 int moveBack = 0;
 int turnLeft = 0;
 int turnRight = 0;
+float speedModifier = 1;
 
 Vector museumPillarVertices[MUSEUM_PILLAR_SIDES * 2];
 Vector museumPillarNormals[MUSEUM_PILLAR_SIDES * 2];
@@ -85,8 +86,8 @@ void calcMetatravellerAngles()
 void calculateCamPos()
 {
 	angle = (angle + (360 + (TURN_SPEED * (turnLeft + turnRight)))) % 360;
-	cam_x += (cos(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack);
-	cam_z += (sin(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack);
+	cam_x += (cos(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack) * speedModifier;
+	cam_z += (sin(deg2rad(angle)) * MOVE_SPEED) * (moveForward + moveBack) * speedModifier;
 
 	cam_x = clamp(cam_x, -PLANE_X + PLANE_BOUNDARY, PLANE_X - PLANE_BOUNDARY);
 	cam_z = clamp(cam_z, -PLANE_Z + PLANE_BOUNDARY, PLANE_Z - PLANE_BOUNDARY);
@@ -443,28 +444,61 @@ void drawFloor()
 {
 	glDisable(GL_LIGHTING);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, texIds[7]);
-	glColor3f(1, 1, 1);
-	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);
-	for(int x = -PLANE_X; x <= PLANE_X; x += PLANE_TILE_SIZE)
-	{
-		for(int z = -PLANE_Z; z <= PLANE_Z; z += PLANE_TILE_SIZE)
+	glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, texIds[7]);
+		glColor3f(1, 1, 1);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 1, 0);
+		for(int x = -PLANE_X; x <= PLANE_X; x += PLANE_TILE_SIZE)
 		{
-			glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
-			glVertex3f(x, 0, z);
-			
-			glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
-			glVertex3f(x, 0, z + PLANE_TILE_SIZE);
-			
-			glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
-			glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
-			
-			glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
-			glVertex3f(x + PLANE_TILE_SIZE, 0, z);
+			for(int z = -PLANE_Z; z <= PLANE_Z; z += PLANE_TILE_SIZE)
+			{
+				glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
+				glVertex3f(x, 0, z);
+				
+				glTexCoord2f(((x / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
+				glVertex3f(x, 0, z + PLANE_TILE_SIZE);
+				
+				glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE);
+				glVertex3f(x + PLANE_TILE_SIZE, 0, z + PLANE_TILE_SIZE);
+				
+				glTexCoord2f(((x / PLANE_TILE_SIZE) + 1) / FLOOR_SCALE, ((z / PLANE_TILE_SIZE) + 0) / FLOOR_SCALE);
+				glVertex3f(x + PLANE_TILE_SIZE, 0, z);
+			}
 		}
-	}
-	glEnd();
+		glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, texIds[6]);
+		glColor3f(0.8, 0.4, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(0, 0, 1);
+			glTexCoord2f(0, 2); glVertex3f(-PLANE_X, 100, -PLANE_Z);
+			glTexCoord2f(0, 0); glVertex3f(-PLANE_X, 0, -PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 0); glVertex3f(PLANE_X, 0, -PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 2); glVertex3f(PLANE_X, 100, -PLANE_Z);
+
+			glNormal3f(0, 0, -1);
+			glTexCoord2f(0, 2); glVertex3f(PLANE_X, 100, PLANE_Z);
+			glTexCoord2f(0, 0); glVertex3f(PLANE_X, 0, PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 0); glVertex3f(-PLANE_X, 0, PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 2); glVertex3f(-PLANE_X, 100, PLANE_Z);
+			
+			glNormal3f(1, 0, 0);
+			glTexCoord2f(0, 2); glVertex3f(-PLANE_X, 100, -PLANE_Z);
+			glTexCoord2f(0, 0); glVertex3f(-PLANE_X, 0, -PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 0); glVertex3f(-PLANE_X, 0, PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 2); glVertex3f(-PLANE_X, 100, PLANE_Z);
+
+			glNormal3f(-1, 0, 0);
+			glTexCoord2f(0, 2); glVertex3f(PLANE_X, 100, PLANE_Z);
+			glTexCoord2f(0, 0); glVertex3f(PLANE_X, 0, PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 0); glVertex3f(PLANE_X, 0, -PLANE_Z);
+			glTexCoord2f((2 * PLANE_X) / 50.0, 2); glVertex3f(PLANE_X, 100, -PLANE_Z);
+		glEnd();
+
+	glPopMatrix();
 	glEnable(GL_LIGHTING);
 }
 
@@ -1228,6 +1262,9 @@ void special(int key, int x, int y)
 		case GLUT_KEY_DOWN:
 			moveBack = -1;
 			break;
+		case GLUT_KEY_SHIFT_L:
+			speedModifier = 2.5;
+			break;
 	}
 }
 
@@ -1246,6 +1283,9 @@ void specialUp(int key, int x, int y)
 			break;
 		case GLUT_KEY_DOWN:
 			moveBack = 0;
+			break;
+		case GLUT_KEY_SHIFT_L:
+			speedModifier = 1;
 			break;
 	}
 }
