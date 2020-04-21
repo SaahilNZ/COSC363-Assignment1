@@ -61,7 +61,7 @@ int turnRight = 0;
 Vector museumPillarVertices[MUSEUM_PILLAR_SIDES * 2];
 Vector museumPillarNormals[MUSEUM_PILLAR_SIDES * 2];
 
-int sceneTime = 90;
+float sceneTime = 0;
 int metatravellerAngles[METATRAVELLER_COUNT];
 bool metatravellerRingsEnabled = false;
 int mobiusStripBallAngle = 0;
@@ -96,9 +96,9 @@ void timer(int value)
 {
 	calcMetatravellerAngles();
 	calculateCamPos();
-	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720;
-	cradleAngle = (-GRAVITY * ((CRADLE_MAX_ANGLE * 4) * sin(deg2rad(sceneTime * 2)))) / CRADLE_LENGTH;
-	sceneTime = (sceneTime + 1) % 360;
+	mobiusStripBallAngle = (mobiusStripBallAngle + 1) % 720; 
+	cradleAngle = rad2deg(deg2rad(CRADLE_MAX_ANGLE) * cosf(sqrtf(GRAVITY / (CRADLE_LENGTH / 100.0)) * sceneTime));
+	sceneTime = fmod(sceneTime + 0.01, 360.0);
 
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, 0);
@@ -760,12 +760,6 @@ void drawMobiusStrip(bool isShadow)
 		glPopMatrix();
 	glPopMatrix();
 }
-
-
-// For Newton's Cradle:
-// https://en.wikipedia.org/wiki/Pendulum_(mathematics)
-// Use a min call and a max call on the simple gravity pendulum differential equation
-// min should be used on one end of the Newton's Cradle, while max should be used on the other
 
 void drawNewtonsCradle(bool isShadow)
 {
